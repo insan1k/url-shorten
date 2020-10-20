@@ -1,4 +1,4 @@
-package shorten
+package shorted
 
 import (
 	"github.com/btcsuite/btcutil/base58"
@@ -6,7 +6,7 @@ import (
 )
 
 // ID defines how we can find a shortened urlShorten in our system
-// todo: look for something smaller and still unique to shorten to
+// todo: look for something smaller and still unique to shorted to
 type ID uuid.UUID
 
 func NewID() (i ID, err error) {
@@ -17,7 +17,7 @@ func NewID() (i ID, err error) {
 }
 
 //string returns the string form of the UUID
-func (i ID) string()string{
+func (i ID) string() string {
 	return uuid.UUID(i).String()
 }
 
