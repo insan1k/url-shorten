@@ -19,8 +19,6 @@ func LoadCache() (c Cache, err error) {
 		MaxEntriesInWindow: configuration.C.CacheMaxEntriesInWindow,
 		MaxEntrySize:       configuration.C.CacheMaxEntrySize,
 		HardMaxCacheSize:   configuration.C.CacheHardMaxCacheSize,
-		//todo: add logger
-		Logger: nil,
 	}
 	c.cache, err = bigcache.NewBigCache(cacheConfig)
 	return
