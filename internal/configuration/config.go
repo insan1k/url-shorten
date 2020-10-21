@@ -112,6 +112,9 @@ func loadConf(c *Configuration) (got Configuration) {
 // - environment variables
 // - file
 func (c *Configuration) Load() {
+	c.pFlag=pflag.NewFlagSet("url-shortener",pflag.PanicOnError)
+	c.viperEnvAndFile =viper.New()
+	c.viperFlag=viper.New()
 	registerFlags(c)
 	parseFlags(c)
 	registerEnvs(c)

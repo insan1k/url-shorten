@@ -74,7 +74,7 @@ func parseFile(c *Configuration) {
 	c.viperEnvAndFile.SetConfigFile("./" + fileName + "." + fileExtension)
 	err = c.viperEnvAndFile.ReadInConfig()
 	if err != nil {
-		handleError(err)
+		return
 	}
 }
 

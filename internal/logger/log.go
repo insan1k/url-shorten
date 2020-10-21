@@ -9,5 +9,5 @@ import (
 var Logger log.Logger
 
 func LoadLogger() {
-	log.SetHandler(logfmt.New(os.Stderr))
+	Logger.Handler=logfmt.New(os.Stderr)
 }
