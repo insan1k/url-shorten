@@ -11,10 +11,10 @@ HTTPIdleTimeout: "1s"
 CacheShards: 2048
 CacheLifeWindow: "30s"
 CacheCleanWindow: "60s"
-CacheMaxEntriesInWindow: "0"
-CacheMaxEntrySize: "32"
-CacheHardMaxCacheSize: "128"
-Neo4JSecure: "false"
+CacheMaxEntriesInWindow: 0
+CacheMaxEntrySize: 32
+CacheHardMaxCacheSize: 128
+Neo4JSecure: False
 Neo4JTarget: "bolt://localhost:7687"
 Neo4JUser: "neo4j"
 Neo4JPassword: "my-neo4j-password"
