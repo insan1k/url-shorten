@@ -13,13 +13,12 @@ func LoadDB() (err error) {
 	}
 	auth := neo4j.BasicAuth(configuration.C.Neo4JUser, configuration.C.Neo4JPassword, configuration.C.Neo4JRealm)
 
-	Driver, err = neo4j.NewDriver(configuration.C.Neo4JPassword, auth, jConf)
+	Driver, err = neo4j.NewDriver(configuration.C.Neo4JTarget, auth, jConf)
 	return
 }
 
 func StopDB() (err error) {
-	Driver.Close()
-	return
+	return Driver.Close()
 }
 
 //todo: attempt to create a parser for structs Neo4j driver is a mess

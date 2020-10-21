@@ -48,6 +48,8 @@ func (e Endpoints) GetRedirectShortURL(w http.ResponseWriter, r *http.Request) {
 		log.Errorf("request error %v", err)
 	}
 	ms := s.ToModel()
+
+	//todo isolate this into a function that persists stuff into cache after reading from database
 	mm, err := model.ShortURLFromCache(ms.ID)
 	if err != nil {
 		mm, err = model.ShortURLFromDB(ms.ID)
