@@ -29,8 +29,10 @@ run_local:
         -v $(PWD)/.neo4j/plugins:/plugins \
         --env NEO4J_AUTH=neo4j/my-neo4j-password \
         neo4j:latest
+	go run ./cmd/url-shorten/main.go --configFile=./cmd/url-shorten/config.yml
 
-required_dirs:
+required:
+	cp "./cmd/url-shorten/example-config.yml" "./cmd/url-shorten/test-config.yml" 2>/dev/null
 	mkdir -p ".neo4j"
 	mkdir -p ".neo4j/data"
 	mkdir -p ".neo4j/logs"
@@ -38,10 +40,12 @@ required_dirs:
 	mkdir -p ".neo4j/plugins"
 
 cleanup:
+	rm -rfv "./cmd/url-shorten/config.yml"
 	rm -rfv ".neo4j"
 	rm -rfv ".build"
 
-test_dirs:
+test_required:
+	cp "./cmd/url-shorten/example-config.yml" "./cmd/url-shorten/test-config.yml" 2>/dev/null
 	mkdir -p ".neo4j-test"
 	mkdir -p ".neo4j-test/data"
 	mkdir -p ".neo4j-test/logs"
@@ -49,4 +53,5 @@ test_dirs:
 	mkdir -p ".neo4j-test/plugins"
 
 test_cleanup:
+	rm -fv "./cmd/url-shorten/test-config.yml"
 	rm -rfv ".neo4j-test"
