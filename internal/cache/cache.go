@@ -11,7 +11,7 @@ type Cache struct {
 	cache *bigcache.BigCache
 }
 
-func LoadCache() (c Cache, err error) {
+func LoadCache() (err error) {
 	var cacheConfig = bigcache.Config{
 		Shards:             configuration.C.CacheShards,
 		LifeWindow:         configuration.C.CacheLifeWindow,
@@ -20,7 +20,7 @@ func LoadCache() (c Cache, err error) {
 		MaxEntrySize:       configuration.C.CacheMaxEntrySize,
 		HardMaxCacheSize:   configuration.C.CacheHardMaxCacheSize,
 	}
-	c.cache, err = bigcache.NewBigCache(cacheConfig)
+	C.cache, err = bigcache.NewBigCache(cacheConfig)
 	return
 }
 

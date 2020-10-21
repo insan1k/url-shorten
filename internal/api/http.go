@@ -7,8 +7,8 @@ import (
 	"net/http"
 )
 
-func (a *API) newHandler(c configuration.Configuration) (err error) {
-	l, err := net.Listen(c.HttpProtocol, c.HttpHostname)
+func (a *API) newHandler() (err error) {
+	l, err := net.Listen(configuration.C.HttpProtocol, configuration.C.HttpHostname)
 	if err != nil {
 		return
 	}
@@ -25,16 +25,16 @@ func (a *API) newHandler(c configuration.Configuration) (err error) {
 	)
 
 	srv := &http.Server{
-		ReadTimeout:  c.HttpReadTimeout,
-		WriteTimeout: c.HttpWriteTimeout,
-		IdleTimeout:  c.HttpIdleTimeout,
+		ReadTimeout:  configuration.C.HttpReadTimeout,
+		WriteTimeout: configuration.C.HttpWriteTimeout,
+		IdleTimeout:  configuration.C.HttpIdleTimeout,
 		Handler:      cr.Handler(a.Router),
 	}
 
-	if c.ServerKeyPath == "" {
+	if configuration.C.ServerKeyPath == "" {
 		err = srv.Serve(l)
 	} else {
-		err = srv.ServeTLS(l, c.ServerCertPath, c.ServerKeyPath)
+		err = srv.ServeTLS(l, configuration.C.ServerCertPath, configuration.C.ServerKeyPath)
 	}
 	return
 }

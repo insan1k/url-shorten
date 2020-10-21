@@ -33,7 +33,8 @@ func HitsFromDb(shortID string, start, end time.Time) (h Hits, err error) {
 		return
 	}
 	for result.Next() {
-		hit, err := NewHitFromDB(result.Record())
+		var hit Hit
+		hit, err = NewHitFromDB(result.Record())
 		if err != nil {
 			return
 		}

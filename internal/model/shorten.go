@@ -81,7 +81,8 @@ func ShortURLFromDB(id string) (s ShortURL, err error) {
 		return
 	}
 	if result.Next() {
-		if err := s.parseFromDB(result.Record()); err != nil {
+		err = s.parseFromDB(result.Record())
+		if err != nil {
 			return
 		}
 	} else {

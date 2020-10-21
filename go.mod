@@ -8,9 +8,9 @@ require (
 	github.com/btcsuite/btcutil v1.0.2
 	github.com/google/uuid v1.1.2
 	github.com/gorilla/mux v1.8.0
-	github.com/gorilla/schema v1.2.0 // indirect
+	github.com/gorilla/schema v1.2.0
 	github.com/neo4j/neo4j-go-driver v1.8.3
-	github.com/rs/cors v1.7.0 // indirect
+	github.com/rs/cors v1.7.0
 	github.com/shamaton/msgpack v1.1.1
 	github.com/spf13/cast v1.3.1
 	github.com/spf13/pflag v1.0.5

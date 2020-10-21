@@ -73,7 +73,8 @@ func GetHitFromDB(id string) (h Hit, err error) {
 		return
 	}
 	if result.Next() {
-		if err := h.parseFromDB(result.Record()); err != nil {
+		err = h.parseFromDB(result.Record())
+		if err != nil {
 			return
 		}
 	} else {
