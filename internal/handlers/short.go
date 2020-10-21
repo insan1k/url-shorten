@@ -7,44 +7,47 @@ import (
 	"net/http"
 )
 
-type shortUrlPost struct {
+// shortURLPost represents the post request that PostShortURL receives
+type shortURLPost struct {
 	Target string `json:"target"`
 }
 
+// PostShortURL is the endpoint that creates a shorted.ShortURL
 func (e Endpoints) PostShortURL(w http.ResponseWriter, r *http.Request) {
-	var p shortUrlPost
-	err := e.DecodeJson(r.Body, &p)
+	var p shortURLPost
+	err := e.DecodeJSON(r.Body, &p)
 	if err != nil {
-		e.Response(w, InternalError, nil)
+		e.Response(w, InternalError)
 		log.Errorf("request error %v", err)
 	}
-	s, err := shorted.NewUrl(p.Target)
+	s, err := shorted.NewURL(p.Target)
 	if err != nil {
-		e.Response(w, InternalError, nil)
+		e.Response(w, InternalError)
 		log.Errorf("request error %v", err)
 	}
 	ms := s.ToModel()
 	err = ms.PersistCache()
 	if err != nil {
-		e.Response(w, InternalError, nil)
+		e.Response(w, InternalError)
 		log.Errorf("request error %v", err)
 	}
 	err = ms.PersistDB()
 	if err != nil {
-		e.Response(w, InternalError, nil)
+		e.Response(w, InternalError)
 		log.Errorf("request error %v", err)
 	}
 }
 
+//GetRedirectShortURL gets a redirect and performs Redirect on http response
 func (e Endpoints) GetRedirectShortURL(w http.ResponseWriter, r *http.Request) {
-	s, err := shorted.NewShortURLFromApi(r.URL.String())
+	s, err := shorted.NewShortURLFromAPI(r.URL.String())
 	if err != nil {
-		e.Response(w, InternalError, nil)
+		e.Response(w, InternalError)
 		log.Errorf("request error %v", err)
 	}
 	hit, err := shorted.HitFromAPI(s, r.RemoteAddr)
 	if err != nil {
-		e.Response(w, InternalError, nil)
+		e.Response(w, InternalError)
 		log.Errorf("request error %v", err)
 	}
 	ms := s.ToModel()
@@ -54,7 +57,7 @@ func (e Endpoints) GetRedirectShortURL(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		mm, err = model.ShortURLFromDB(ms.ID)
 		if err != nil {
-			e.Response(w, InternalError, nil)
+			e.Response(w, InternalError)
 			log.Errorf("request error %v", err)
 		} else {
 			hit.Ended(mm.Original, false)

@@ -5,9 +5,11 @@ import (
 	"github.com/neo4j/neo4j-go-driver/neo4j"
 )
 
+// Driver is the singleton of our neo4j driver
 var Driver neo4j.Driver
 
-func LoadDB() (err error) {
+// Load loads database connection into the singleton
+func Load() (err error) {
 	jConf := func(conf *neo4j.Config) {
 		conf.Encrypted = configuration.C.Neo4JSecure
 	}
@@ -17,7 +19,8 @@ func LoadDB() (err error) {
 	return
 }
 
-func StopDB() (err error) {
+// Stop our database connection
+func Stop() (err error) {
 	return Driver.Close()
 }
 

@@ -41,7 +41,7 @@ func newShort(id string) (u urlShorten, err error) {
 	if configuration.C.Port != "" {
 		url += ":" + configuration.C.Port
 	}
-	url += shortenPath + id
+	url += configuration.URLShortenerPath + id
 	return parseShort(url)
 }
 
@@ -69,7 +69,7 @@ func parseShort(s string) (u urlShorten, err error) {
 }
 
 func (u urlShorten) escapeEndpoint() (escaped string) {
-	escaped = u.Path[len(shortenPath):]
+	escaped = u.Path[len(configuration.URLShortenerPath):]
 	return
 }
 

@@ -9,6 +9,7 @@ import (
 	"time"
 )
 
+// Hit represents the model of a redirection event
 type Hit struct {
 	ID        string        `json:"id"`
 	ShortID   string        `json:"short_id"`
@@ -20,6 +21,7 @@ type Hit struct {
 	Timestamp time.Time     `json:"timestamp"`
 }
 
+// PersistDB writes a single Hit to the database
 func (h Hit) PersistDB() (err error) {
 	session, err := database.Driver.Session(neo4j.AccessModeWrite)
 	if err != nil {
@@ -57,6 +59,7 @@ func (h Hit) PersistDB() (err error) {
 	return
 }
 
+// GetHitFromDB gets a single Hit from the database
 func GetHitFromDB(id string) (h Hit, err error) {
 	session, err := database.Driver.Session(neo4j.AccessModeWrite)
 	if err != nil {
@@ -84,11 +87,13 @@ func GetHitFromDB(id string) (h Hit, err error) {
 	return
 }
 
+// NewHitFromDB creates a Hit from a database record
 func NewHitFromDB(record neo4j.Record) (h Hit, err error) {
 	err = h.parseFromDB(record)
 	return
 }
 
+//todo: create a JSON parser from neo4j.Record the complexity here is just unacceptable
 func (h *Hit) parseFromDB(record neo4j.Record) (err error) {
 	jID, ok := record.Get("id")
 	if !ok {

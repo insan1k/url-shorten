@@ -8,7 +8,7 @@ import (
 )
 
 func (a *API) newHandler() (err error) {
-	l, err := net.Listen(configuration.C.HttpProtocol, configuration.C.HttpHostname)
+	l, err := net.Listen(configuration.C.HTTPProtocol, configuration.C.HTTPHostname)
 	if err != nil {
 		return
 	}
@@ -25,9 +25,9 @@ func (a *API) newHandler() (err error) {
 	)
 
 	srv := &http.Server{
-		ReadTimeout:  configuration.C.HttpReadTimeout,
-		WriteTimeout: configuration.C.HttpWriteTimeout,
-		IdleTimeout:  configuration.C.HttpIdleTimeout,
+		ReadTimeout:  configuration.C.HTTPReadTimeout,
+		WriteTimeout: configuration.C.HTTPWriteTimeout,
+		IdleTimeout:  configuration.C.HTTPIdleTimeout,
 		Handler:      cr.Handler(a.Router),
 	}
 

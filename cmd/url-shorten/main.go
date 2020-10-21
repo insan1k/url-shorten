@@ -10,24 +10,24 @@ import (
 
 func main() {
 	configuration.C.Load()
-	logger.LoadLogger()
-	err := database.LoadDB()
+	logger.Load()
+	err := database.Load()
 	if err != nil {
-		logger.Logger.Errorf("fatal %v", err)
+		logger.L.Errorf("fatal %v", err)
 		return
 	}
 	defer func() {
-		err = database.StopDB()
-		logger.Logger.Errorf("error stopping db %v", err)
+		err = database.Stop()
+		logger.L.Errorf("error stopping db %v", err)
 	}()
 	err = cache.LoadCache()
 	if err != nil {
-		logger.Logger.Errorf("fatal %v", err)
+		logger.L.Errorf("fatal %v", err)
 		return
 	}
 	err = api.Load()
 	if err != nil {
-		logger.Logger.Errorf("fatal %v", err)
+		logger.L.Errorf("fatal %v", err)
 		return
 	}
 }

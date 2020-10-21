@@ -6,8 +6,12 @@ import (
 	"os"
 )
 
-var Logger log.Logger
+// L is our logger singleton
+var L log.Logger
 
-func LoadLogger() {
-	Logger.Handler=logfmt.New(os.Stderr)
+//Load logger singleton
+func Load() {
+	L.Handler = logfmt.New(os.Stderr)
 }
+
+//todo: configure log levels

@@ -17,3 +17,10 @@
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
+
+# Neo4j Data dirs
+.neo4j
+.neo4j/*
+
+# Local Config
+./cmd/url-shorten/config.yml

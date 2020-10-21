@@ -13,6 +13,7 @@ const (
 	invalidPortErr = "network port: %v is not valid"
 )
 
+// Address represents the structure of a remote http client's Address
 type Address struct {
 	IP   net.IP
 	Port uint16

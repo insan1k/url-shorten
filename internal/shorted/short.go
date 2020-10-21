@@ -4,10 +4,6 @@ import (
 	"github.com/insan1k/one-qr-dot-me/internal/model"
 )
 
-const (
-	shortenPath = "/"
-)
-
 // ShortURL struct holds all the data required for redirecting a request
 type ShortURL struct {
 	ID       ID
@@ -15,7 +11,8 @@ type ShortURL struct {
 	Short    urlShorten
 }
 
-func NewUrl(u string) (s ShortURL, err error) {
+// NewURL creates ShortURL from an original url
+func NewURL(u string) (s ShortURL, err error) {
 	s.Original, err = newOriginal(u)
 	if err != nil {
 		return
@@ -28,7 +25,8 @@ func NewUrl(u string) (s ShortURL, err error) {
 	return
 }
 
-func NewShortURLFromApi(ss string) (s ShortURL, err error) {
+// NewShortURLFromAPI creates ShortURL from an API request
+func NewShortURLFromAPI(ss string) (s ShortURL, err error) {
 	short, err := parseShort(ss)
 	if err != nil {
 		return
@@ -41,6 +39,7 @@ func NewShortURLFromApi(ss string) (s ShortURL, err error) {
 	return
 }
 
+// NewShortURLFromModel creates ShortURL from model.ShortURL
 func NewShortURLFromModel(m model.ShortURL) (s ShortURL, err error) {
 	err = s.ID.decodeID(m.ID)
 	if err != nil {
@@ -59,6 +58,7 @@ func NewShortURLFromModel(m model.ShortURL) (s ShortURL, err error) {
 	return
 }
 
+// ToModel converts ShortURL to model.ShortURL
 func (s ShortURL) ToModel() model.ShortURL {
 	return model.ShortURL{
 		ID:       s.ID.encodeID(),

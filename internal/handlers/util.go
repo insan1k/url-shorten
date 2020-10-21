@@ -4,39 +4,48 @@ import (
 	"encoding/json"
 	"github.com/apex/log"
 	"github.com/gorilla/schema"
-	"github.com/insan1k/one-qr-dot-me/internal/configuration"
 	"io"
 	"net/http"
 )
 
 const (
-	Success       = "success"
-	NoContent     = "no-content"
-	Redirect      = "redirect"
-	Bad           = "bad"
-	Unauthorized  = "unauthorized"
-	Forbidden     = "forbidden"
-	NotAllowed    = "not-allowed"
-	NotFound      = "not-found"
-	InternalError = "server"
+	// Success represents a success response in the predefined responses map
+	Success = iota
+	// NoContent represents a no content error response in the predefined responses map
+	NoContent = iota
+	// Redirect represents a redirect response in the predefined responses map
+	Redirect = iota
+	// Bad represents bad request response in the predefined responses map
+	Bad = iota
+	// Unauthorized  represents a unauthorized request response in the predefined responses map
+	Unauthorized = iota
+	// Forbidden represents a forbidden request response in the predefined responses map
+	Forbidden = iota
+	// NotAllowed represents a not allowed request response in the predefined responses map
+	NotAllowed = iota
+	// NotFound represents a not found request response in the predefined responses map
+	NotFound = iota
+	// InternalError represents a internal server error response in the predefined responses map
+	InternalError = iota
 )
 
+//Endpoints struct that holds methods and parameters useful for our endpoints and the endpoint methods themselves
 type Endpoints struct {
-	responses map[string]response
-	c         configuration.Configuration
+	responses map[int]response
 }
 
-func New()(e Endpoints){
+//New creates the Endpoints struct
+func New() (e Endpoints) {
 	e.load()
 	return
 }
-
 
 type response struct {
 	Code   int
 	String string
 }
 
+//Body returns the []byte of a predefined response
 func (r response) Body() []byte {
 	return []byte(r.String)
 }
@@ -46,7 +55,7 @@ func (e *Endpoints) load() {
 }
 
 func (e *Endpoints) registerResponses() {
-	e.responses = map[string]response{
+	e.responses = map[int]response{
 		Success:       {200, `{"code": 200, "message": "Asked and done"}`},
 		NoContent:     {204, `{"code": 204, "message": "No content!"}`},
 		Redirect:      {302, `{"code": 302, "message": "Never gonna give you up..."}`},
@@ -59,19 +68,22 @@ func (e *Endpoints) registerResponses() {
 	}
 }
 
-func (e Endpoints) DecodeJson(body io.Reader, entity interface{}) (err error) {
+// DecodeJSON decodes a JSON
+func (e Endpoints) DecodeJSON(body io.Reader, entity interface{}) (err error) {
 	d := json.NewDecoder(body)
 	err = d.Decode(entity)
 	return
 }
 
+// DecodeQueryParameters decodes query string parameters
 func (e Endpoints) DecodeQueryParameters(dst interface{}, src map[string][]string) (err error) {
 	d := schema.NewDecoder()
 	err = d.Decode(dst, src)
 	return
 }
 
-func (e Endpoints) EncodeJson(toMarshall interface{}, ident bool) (j []byte, err error) {
+//EncodeJSON encodes a JSON to []byte
+func (e Endpoints) EncodeJSON(toMarshall interface{}, ident bool) (j []byte, err error) {
 	if !ident {
 		j, err = json.Marshal(toMarshall)
 	} else {
@@ -80,7 +92,8 @@ func (e Endpoints) EncodeJson(toMarshall interface{}, ident bool) (j []byte, err
 	return
 }
 
-func (e *Endpoints) Response(w http.ResponseWriter, resp string, body []byte) {
+// Response writes a response to http.ResponseWriter
+func (e *Endpoints) Response(w http.ResponseWriter, resp int, body ...byte) {
 	// get response from default responses
 	r, ok := e.responses[resp]
 	if !ok {

@@ -8,6 +8,7 @@ import (
 	"time"
 )
 
+// HitsOverTime represents a request that gets the model.Hits over a time period
 type HitsOverTime struct {
 	shortID    string `schema:"id"`
 	timePeriod string `schema:"period"`
@@ -37,29 +38,30 @@ func (h HitsOverTime) getTimePeriod() (start time.Time, end time.Time) {
 	return
 }
 
+// GetHitsOverTimePeriod gets the hits over one of the supported time periods
 func (e Endpoints) GetHitsOverTimePeriod(w http.ResponseWriter, r *http.Request) {
 	var h HitsOverTime
 	err := e.DecodeQueryParameters(&h, r.URL.Query())
 	if err != nil {
-		e.Response(w, InternalError, nil)
+		e.Response(w, InternalError)
 		log.Errorf("request error %v", err)
 	}
 	err = h.validate()
 	if err != nil {
-		e.Response(w, NotAllowed, nil)
+		e.Response(w, NotAllowed)
 		log.Errorf("request error %v", err)
 	}
 	start, end := h.getTimePeriod()
 	hits, err := model.HitsFromDb(h.shortID, start, end)
 	if err != nil {
-		e.Response(w, InternalError, nil)
+		e.Response(w, InternalError)
 		log.Errorf("request error %v", err)
 	}
-	json, err := e.EncodeJson(hits, false)
+	json, err := e.EncodeJSON(hits, false)
 	if err != nil {
-		e.Response(w, InternalError, nil)
+		e.Response(w, InternalError)
 		log.Errorf("request error %v", err)
 	}
-	e.Response(w, Success, json)
+	e.Response(w, Success, json...)
 	return
 }

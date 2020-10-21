@@ -1,0 +1,23 @@
+version: '3.8'
+services:
+  neo4j:
+    image: 'neo4j:latest'
+    container_name: 'neo4j'
+    ports:
+      - '7474:7474'
+      - '7687:7687'
+    volumes:
+      - './data/conf:/conf'
+      - './data/data:/data'
+      - './data/import:/import'
+      - './data/logs:/logs'
+      - './data/plugins:/plugins'
+    environment:
+      - 'NEO4J_AUTH=neo4j/my-neo4j-password'
+  api:
+    container_name: 'url-shorten'
+    build: '.'
+    ports:
+      - '3077:8080'
+    depends_on:
+      - 'neo4j'

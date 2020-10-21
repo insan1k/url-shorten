@@ -16,6 +16,7 @@ const (
 	couldNotParseError = "parse from db failed invalid data %v "
 )
 
+// ShortURL is the model struct for ShortURL
 type ShortURL struct {
 	ID        string    `json:"id" msgpack:"id"`
 	Original  string    `json:"original" msgpack:"original"`
@@ -23,6 +24,7 @@ type ShortURL struct {
 	Timestamp time.Time `json:"timestamp" msgpack:"timestamp"`
 }
 
+// PersistCache saves a ShortURL to the cache
 func (s ShortURL) PersistCache() (err error) {
 	packed, err := s.toMsgPack()
 	if err != nil {
@@ -32,6 +34,7 @@ func (s ShortURL) PersistCache() (err error) {
 	return
 }
 
+// PersistDB saves a ShortURL to the database
 func (s ShortURL) PersistDB() (err error) {
 	session, err := database.Driver.Session(neo4j.AccessModeWrite)
 	if err != nil {
@@ -56,6 +59,7 @@ func (s ShortURL) PersistDB() (err error) {
 	return
 }
 
+//ShortURLFromCache retrieves a ShortURL from the cache
 func ShortURLFromCache(id string) (s ShortURL, err error) {
 	packed, err := cache.C.Get(id)
 	if err != nil {
@@ -65,6 +69,7 @@ func ShortURLFromCache(id string) (s ShortURL, err error) {
 	return
 }
 
+//ShortURLFromDB retrieves a ShortURL from the database
 func ShortURLFromDB(id string) (s ShortURL, err error) {
 	session, err := database.Driver.Session(neo4j.AccessModeWrite)
 	if err != nil {

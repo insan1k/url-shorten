@@ -6,11 +6,13 @@ import (
 	"time"
 )
 
+// Hits represents a aggregate of hits
 type Hits struct {
 	Count int   `json:"count"`
 	Hits  []Hit `json:"hits"`
 }
 
+// HitsFromDb retrieves a group of hits from the database
 func HitsFromDb(shortID string, start, end time.Time) (h Hits, err error) {
 	session, err := database.Driver.Session(neo4j.AccessModeWrite)
 	if err != nil {
@@ -24,11 +26,11 @@ func HitsFromDb(shortID string, start, end time.Time) (h Hits, err error) {
 		"start":    start.Format(time.RFC3339Nano),
 		"end":      end.Format(time.RFC3339Nano),
 	}
-	result, err := session.Run("MATCH (n:Hit) "+
-		"where date(datetime(n:timestamp))>$start"+
+	result, err := session.Run("MATCH (n:Hit {short_id: $short_id})"+
+		"where datetime(n:timestamp)>$start"+
 		"or "+
-		"date(datetime(n:timestamp))<$end"+
-		"and short_id=$short_id`;", data)
+		"datetime(n:timestamp)<$end"+
+		"`;", data)
 	if err != nil {
 		return
 	}

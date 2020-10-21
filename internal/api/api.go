@@ -2,9 +2,11 @@ package api
 
 import (
 	"github.com/gorilla/mux"
+	"github.com/insan1k/one-qr-dot-me/internal/configuration"
 	"github.com/insan1k/one-qr-dot-me/internal/handlers"
 )
 
+// A is our API singleton
 var A API
 
 // API holds mux router
@@ -12,7 +14,8 @@ type API struct {
 	Router *mux.Router
 }
 
-func Load()(err error){
+// Load our API singleton
+func Load() (err error) {
 	return A.loadAPI()
 }
 
@@ -27,8 +30,8 @@ func (a *API) loadAPI() (err error) {
 }
 
 func (a *API) registerRoutes() {
-	e:=handlers.New()
+	e := handlers.New()
 	a.Router.HandleFunc("/short", e.PostShortURL)
 	a.Router.HandleFunc("/hits", e.GetHitsOverTimePeriod)
-	a.Router.PathPrefix("/").HandlerFunc(e.GetRedirectShortURL)
+	a.Router.PathPrefix(configuration.URLShortenerPath).HandlerFunc(e.GetRedirectShortURL)
 }

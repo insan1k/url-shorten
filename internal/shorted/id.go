@@ -9,6 +9,7 @@ import (
 // todo: look for something smaller and still unique to shorted to
 type ID uuid.UUID
 
+// NewID creates and return a new v1 UUID
 func NewID() (i ID, err error) {
 	if id, err := uuid.NewUUID(); err == nil {
 		i = ID(id)

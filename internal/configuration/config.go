@@ -7,8 +7,15 @@ import (
 	"time"
 )
 
+const (
+	//URLShortenerPath defines in which endpoint we will perform redirects
+	URLShortenerPath = "/"
+)
+
+// C is our configuration singleton
 var C Configuration
 
+// Configuration holds all the configuration parameters for our program
 type Configuration struct {
 	// shorten service configuration
 	Scheme string
@@ -17,11 +24,11 @@ type Configuration struct {
 	// HTTP arguments
 	ServerCertPath   string
 	ServerKeyPath    string
-	HttpHostname     string
-	HttpProtocol     string
-	HttpReadTimeout  time.Duration
-	HttpWriteTimeout time.Duration
-	HttpIdleTimeout  time.Duration
+	HTTPHostname     string
+	HTTPProtocol     string
+	HTTPReadTimeout  time.Duration
+	HTTPWriteTimeout time.Duration
+	HTTPIdleTimeout  time.Duration
 	// CacheConfiguration arguments
 	CacheShards             int
 	CacheLifeWindow         time.Duration
@@ -62,11 +69,11 @@ const (
 	envShortenDomain           = "SHORTEN_DOMAIN"
 	envServerTLSCertPath       = "TLS_CERT_PATH"
 	envServerTLSKeyPath        = "TLS_KEY_PATH"
-	envHttpHostname            = "HTTP_HOSTNAME"
-	envHttpProtocol            = "HTTP_BIND_PROTOCOL"
-	envHttpReadTimeout         = "HTTP_READ_TIMEOUT"
-	envHttpWriteTimeout        = "HTTP_WRITE_TIMEOUT"
-	envHttpIdleTimeout         = "HTTP_IDLE_TIMEOUT"
+	envHTTPHostname            = "HTTP_HOSTNAME"
+	envHTTPProtocol            = "HTTP_BIND_PROTOCOL"
+	envHTTPReadTimeout         = "HTTP_READ_TIMEOUT"
+	envHTTPWriteTimeout        = "HTTP_WRITE_TIMEOUT"
+	envHTTPIdleTimeout         = "HTTP_IDLE_TIMEOUT"
 	envCacheShards             = "CACHE_SHARDS"
 	envCacheLifeWindow         = "CACHE_LIFE_WINDOW"
 	envCacheCleanWindow        = "CACHE_CLEAN_WINDOW"
@@ -130,23 +137,23 @@ var configurationMap = map[string]config{
 		Usage:    "set the http server tls key path  e.g.:\"\" defaults to empty",
 		castType: castString,
 	},
-	envHttpHostname: {
+	envHTTPHostname: {
 		Flag:     "httpHostname",
-		Env:      envHttpHostname,
-		File:     "HttpHostname",
+		Env:      envHTTPHostname,
+		File:     "HTTPHostname",
 		Default:  "localhost",
 		Usage:    "set the http server bind hostname e.g.:\"localhost:8081\" defaults to localhost",
 		castType: castString,
 	},
-	envHttpProtocol: {
+	envHTTPProtocol: {
 		Flag:     "httpProtocol",
-		Env:      envHttpProtocol,
-		File:     "",
+		Env:      envHTTPProtocol,
+		File:     "HTTPProtocol",
 		Default:  "tcp",
 		Usage:    "set the http server bind protocol e.g.:\"tcp4\" defaults to tcp, supported protocols are tcp4, tcp6 and tcp",
 		castType: castString,
 	},
-	envHttpReadTimeout: {
+	envHTTPReadTimeout: {
 		Flag:     "httpReadTimeout",
 		Env:      "",
 		File:     "HTTPReadTimeout",
@@ -154,7 +161,7 @@ var configurationMap = map[string]config{
 		Usage:    "set the http server read timeout e.g.:\"5s\" defaults to 1 second",
 		castType: castDuration,
 	},
-	envHttpWriteTimeout: {
+	envHTTPWriteTimeout: {
 		Flag:     "httpWriteTimeout",
 		Env:      "",
 		File:     "HTTPWriteTimeout",
@@ -162,7 +169,7 @@ var configurationMap = map[string]config{
 		Usage:    "set the http server write timeout e.g.:\"5s\" defaults to 1 second",
 		castType: castDuration,
 	},
-	envHttpIdleTimeout: {
+	envHTTPIdleTimeout: {
 		Flag:     "httpIdleTimeout",
 		Env:      "",
 		File:     "HTTPIdleTimeout",
@@ -238,7 +245,7 @@ var configurationMap = map[string]config{
 		Flag:     "neo4jUser",
 		Env:      envNeo4JUser,
 		File:     "Neo4JUser",
-		Default:  "neo4j-admin",
+		Default:  "",
 		Usage:    "sets the neo4j user. e.g.:\"my-application-user\" defaults to neo4j-admin",
 		castType: castString,
 	},
@@ -246,7 +253,7 @@ var configurationMap = map[string]config{
 		Flag:     "neo4jPassword",
 		Env:      envNeo4JPassword,
 		File:     "Neo4JPassword",
-		Default:  "secret",
+		Default:  "",
 		Usage:    "sets the neo4j password. e.g.:\"my-application-secure-password\" defaults to secret",
 		castType: castString,
 	},
@@ -254,7 +261,7 @@ var configurationMap = map[string]config{
 		Flag:     "Neo4JRealm",
 		Env:      envNeo4JRealm,
 		File:     "neo4jRealm",
-		Default:  "Neo4JRealm",
+		Default:  "",
 		Usage:    "sets the neo4j realm. e.g.:\"my-neo4j-realm\" defaults to Neo4J",
 		castType: castString,
 	},
@@ -269,11 +276,11 @@ func loadConf(c *Configuration) (got Configuration) {
 		Domain:                  cast.ToString(getConf(c, envShortenDomain)),
 		ServerCertPath:          cast.ToString(getConf(c, envServerTLSCertPath)),
 		ServerKeyPath:           cast.ToString(getConf(c, envServerTLSKeyPath)),
-		HttpHostname:            cast.ToString(getConf(c, envHttpHostname)),
-		HttpProtocol:            cast.ToString(getConf(c, envHttpProtocol)),
-		HttpReadTimeout:         cast.ToDuration(getConf(c, envHttpReadTimeout)),
-		HttpWriteTimeout:        cast.ToDuration(getConf(c, envHttpWriteTimeout)),
-		HttpIdleTimeout:         cast.ToDuration(getConf(c, envHttpIdleTimeout)),
+		HTTPHostname:            cast.ToString(getConf(c, envHTTPHostname)),
+		HTTPProtocol:            cast.ToString(getConf(c, envHTTPProtocol)),
+		HTTPReadTimeout:         cast.ToDuration(getConf(c, envHTTPReadTimeout)),
+		HTTPWriteTimeout:        cast.ToDuration(getConf(c, envHTTPWriteTimeout)),
+		HTTPIdleTimeout:         cast.ToDuration(getConf(c, envHTTPIdleTimeout)),
 		CacheLifeWindow:         cast.ToDuration(getConf(c, envCacheLifeWindow)),
 		CacheCleanWindow:        cast.ToDuration(getConf(c, envCacheCleanWindow)),
 		CacheMaxEntriesInWindow: cast.ToInt(getConf(c, envCacheMaxEntriesInWindow)),
@@ -292,7 +299,7 @@ func loadConf(c *Configuration) (got Configuration) {
 // - environment variables
 // - file
 func (c *Configuration) Load() {
-	c.pFlag = pflag.NewFlagSet("url-shortener", pflag.PanicOnError)
+	c.pFlag = pflag.NewFlagSet("url-shorten", pflag.PanicOnError)
 	c.viperEnvAndFile = viper.New()
 	c.viperFlag = viper.New()
 	registerFlags(c)

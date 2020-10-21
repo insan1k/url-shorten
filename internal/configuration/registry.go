@@ -11,21 +11,21 @@ type registerFlagType func(conf config, c *Configuration)
 
 // all types accepted by cast package
 const (
-	castBool          = iota
-	castDuration      = iota
-	castFloat64       = iota
-	castFloat32       = iota
-	castInt64         = iota
-	castInt32         = iota
-	castInt16         = iota
-	castInt8          = iota
-	castInt           = iota
-	castUint          = iota
-	castUint64        = iota
-	castUint32        = iota
-	castUint16        = iota
-	castUint8         = iota
-	castString        = iota
+	castBool     = iota
+	castDuration = iota
+	castFloat64  = iota
+	castFloat32  = iota
+	castInt64    = iota
+	castInt32    = iota
+	castInt16    = iota
+	castInt8     = iota
+	castInt      = iota
+	castUint     = iota
+	castUint64   = iota
+	castUint32   = iota
+	castUint16   = iota
+	castUint8    = iota
+	castString   = iota
 	//implement parser methods for these types if need arises
 	castBoolSlice     = iota
 	castStringSlice   = iota
@@ -50,7 +50,7 @@ func flagRegister(conf config, c *Configuration) {
 		castUint16:        registerUint16,
 		castUint8:         registerUint8,
 		castString:        registerString,
-		castBoolSlice:	   notImplemented,
+		castBoolSlice:     notImplemented,
 		castStringSlice:   registerStringSlice,
 		castIntSlice:      notImplemented,
 		castDurationSlice: notImplemented,
@@ -59,8 +59,8 @@ func flagRegister(conf config, c *Configuration) {
 }
 
 func registerBool(conf config, c *Configuration) {
-	val,err:=cast.ToBoolE(conf.Default)
-	if err!=nil{
+	val, err := cast.ToBoolE(conf.Default)
+	if err != nil {
 		handleError(err)
 	}
 	c.pFlag.Bool(
@@ -71,8 +71,8 @@ func registerBool(conf config, c *Configuration) {
 }
 
 func registerDuration(conf config, c *Configuration) {
-	val,err:=cast.ToDurationE(conf.Default)
-	if err!=nil{
+	val, err := cast.ToDurationE(conf.Default)
+	if err != nil {
 		handleError(err)
 	}
 	c.pFlag.Duration(
@@ -83,8 +83,8 @@ func registerDuration(conf config, c *Configuration) {
 }
 
 func registerFloat64(conf config, c *Configuration) {
-	val,err:=cast.ToFloat64E(conf.Default)
-	if err!=nil{
+	val, err := cast.ToFloat64E(conf.Default)
+	if err != nil {
 		handleError(err)
 	}
 	c.pFlag.Float64(
@@ -95,8 +95,8 @@ func registerFloat64(conf config, c *Configuration) {
 }
 
 func registerFloat32(conf config, c *Configuration) {
-	val,err:=cast.ToFloat32E(conf.Default)
-	if err!=nil{
+	val, err := cast.ToFloat32E(conf.Default)
+	if err != nil {
 		handleError(err)
 	}
 	c.pFlag.Float32(
@@ -107,8 +107,8 @@ func registerFloat32(conf config, c *Configuration) {
 }
 
 func registerInt64(conf config, c *Configuration) {
-	val,err:=cast.ToInt64E(conf.Default)
-	if err!=nil{
+	val, err := cast.ToInt64E(conf.Default)
+	if err != nil {
 		handleError(err)
 	}
 	c.pFlag.Int64(
@@ -119,8 +119,8 @@ func registerInt64(conf config, c *Configuration) {
 }
 
 func registerInt32(conf config, c *Configuration) {
-	val,err:=cast.ToInt32E(conf.Default)
-	if err!=nil{
+	val, err := cast.ToInt32E(conf.Default)
+	if err != nil {
 		handleError(err)
 	}
 	c.pFlag.Int32(
@@ -131,8 +131,8 @@ func registerInt32(conf config, c *Configuration) {
 }
 
 func registerInt16(conf config, c *Configuration) {
-	val,err:=cast.ToInt16E(conf.Default)
-	if err!=nil{
+	val, err := cast.ToInt16E(conf.Default)
+	if err != nil {
 		handleError(err)
 	}
 	c.pFlag.Int16(
@@ -143,8 +143,8 @@ func registerInt16(conf config, c *Configuration) {
 }
 
 func registerInt8(conf config, c *Configuration) {
-	val,err:=cast.ToInt8E(conf.Default)
-	if err!=nil{
+	val, err := cast.ToInt8E(conf.Default)
+	if err != nil {
 		handleError(err)
 	}
 	c.pFlag.Int8(
@@ -155,8 +155,8 @@ func registerInt8(conf config, c *Configuration) {
 }
 
 func registerInt(conf config, c *Configuration) {
-	val,err:=cast.ToIntE(conf.Default)
-	if err!=nil{
+	val, err := cast.ToIntE(conf.Default)
+	if err != nil {
 		handleError(err)
 	}
 	c.pFlag.Int(
@@ -167,8 +167,8 @@ func registerInt(conf config, c *Configuration) {
 }
 
 func registerUint(conf config, c *Configuration) {
-	val,err:=cast.ToUintE(conf.Default)
-	if err!=nil{
+	val, err := cast.ToUintE(conf.Default)
+	if err != nil {
 		handleError(err)
 	}
 	c.pFlag.Uint(
@@ -179,8 +179,8 @@ func registerUint(conf config, c *Configuration) {
 }
 
 func registerUint64(conf config, c *Configuration) {
-	val,err:=cast.ToUint64E(conf.Default)
-	if err!=nil{
+	val, err := cast.ToUint64E(conf.Default)
+	if err != nil {
 		handleError(err)
 	}
 	c.pFlag.Uint64(
@@ -191,8 +191,8 @@ func registerUint64(conf config, c *Configuration) {
 }
 
 func registerUint32(conf config, c *Configuration) {
-	val,err:=cast.ToUint32E(conf.Default)
-	if err!=nil{
+	val, err := cast.ToUint32E(conf.Default)
+	if err != nil {
 		handleError(err)
 	}
 	c.pFlag.Uint32(
@@ -203,8 +203,8 @@ func registerUint32(conf config, c *Configuration) {
 }
 
 func registerUint16(conf config, c *Configuration) {
-	val,err:=cast.ToUint16E(conf.Default)
-	if err!=nil{
+	val, err := cast.ToUint16E(conf.Default)
+	if err != nil {
 		handleError(err)
 	}
 	c.pFlag.Uint16(
@@ -215,8 +215,8 @@ func registerUint16(conf config, c *Configuration) {
 }
 
 func registerUint8(conf config, c *Configuration) {
-	val,err:=cast.ToUint8E(conf.Default)
-	if err!=nil{
+	val, err := cast.ToUint8E(conf.Default)
+	if err != nil {
 		handleError(err)
 	}
 	c.pFlag.Uint8(
@@ -235,7 +235,7 @@ func registerString(conf config, c *Configuration) {
 }
 
 func registerStringSlice(conf config, c *Configuration) {
-	ss,err:=parseStringSlice(conf.Default)
+	ss, err := parseStringSlice(conf.Default)
 	if err != nil {
 		handleError(err)
 	}
@@ -246,7 +246,7 @@ func registerStringSlice(conf config, c *Configuration) {
 	)
 }
 
-func notImplemented(config,*Configuration) {
+func notImplemented(config, *Configuration) {
 	handleError(errors.New("not implemented"))
 }
 
@@ -260,4 +260,3 @@ func parseStringSlice(val string) ([]string, error) {
 	csvReader := csv.NewReader(stringReader)
 	return csvReader.Read()
 }
-

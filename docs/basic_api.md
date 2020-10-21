@@ -1,5 +1,5 @@
 # API Specification
-There are 3 paths avaliable in our API.
+There are 3 paths available in our API.
 
 * ##/r
    

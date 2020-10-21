@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+//Hit is the struct that represents the event of a redirect
 type Hit struct {
 	ID        ID
 	ShortID   ID
@@ -16,6 +17,7 @@ type Hit struct {
 	Timestamp time.Time
 }
 
+//Ended is called once we finished processing the redirect from a hit
 func (h *Hit) Ended(original string, cached bool) {
 	h.To, _ = newOriginal(original)
 	h.WasCached = cached
@@ -23,6 +25,7 @@ func (h *Hit) Ended(original string, cached bool) {
 	return
 }
 
+//HitFromAPI creates Hit from the API endpoint
 func HitFromAPI(url ShortURL, remoteAddr string) (h Hit, err error) {
 	h.ID, err = NewID()
 	if err != nil {
@@ -38,6 +41,7 @@ func HitFromAPI(url ShortURL, remoteAddr string) (h Hit, err error) {
 	return
 }
 
+// HitFromModel creates Hit based on model.Hit
 func HitFromModel(m model.Hit) (h Hit, err error) {
 	err = h.ID.decodeID(m.ID)
 	if err != nil {
@@ -64,6 +68,7 @@ func HitFromModel(m model.Hit) (h Hit, err error) {
 	return
 }
 
+// ToModel converts Hit to model.Hit
 func (h Hit) ToModel() (m model.Hit, err error) {
 	m.ID = h.ID.string()
 	m.ShortID = h.ShortID.string()
