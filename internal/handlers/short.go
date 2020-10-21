@@ -19,51 +19,64 @@ func (e Endpoints) PostShortURL(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		e.Response(w, InternalError)
 		log.Errorf("request error %v", err)
+		return
 	}
 	s, err := shorted.NewURL(p.Target)
 	if err != nil {
 		e.Response(w, InternalError)
 		log.Errorf("request error %v", err)
+		return
 	}
 	ms := s.ToModel()
 	err = ms.PersistCache()
 	if err != nil {
 		e.Response(w, InternalError)
 		log.Errorf("request error %v", err)
+		return
 	}
 	err = ms.PersistDB()
 	if err != nil {
 		e.Response(w, InternalError)
 		log.Errorf("request error %v", err)
+		return
 	}
 }
 
 //GetRedirectShortURL gets a redirect and performs Redirect on http response
 func (e Endpoints) GetRedirectShortURL(w http.ResponseWriter, r *http.Request) {
-	s, err := shorted.NewShortURLFromAPI(r.URL.String())
+	s, err := shorted.NewPartialShortURLFromAPI(r.URL.String())
 	if err != nil {
 		e.Response(w, InternalError)
 		log.Errorf("request error %v", err)
+		return
 	}
 	hit, err := shorted.HitFromAPI(s, r.RemoteAddr)
 	if err != nil {
 		e.Response(w, InternalError)
 		log.Errorf("request error %v", err)
+		return
 	}
 	ms := s.ToModel()
-
-	//todo isolate this into a function that persists stuff into cache after reading from database
-	mm, err := model.ShortURLFromCache(ms.ID)
-	if err != nil {
-		mm, err = model.ShortURLFromDB(ms.ID)
-		if err != nil {
-			e.Response(w, InternalError)
-			log.Errorf("request error %v", err)
-		} else {
-			hit.Ended(mm.Original, false)
-		}
-	} else {
-		hit.Ended(mm.Original, true)
+	mm,cached, err := model.FindShortURL(ms.ID)
+	if err!=nil{
+		e.Response(w, InternalError)
+		log.Errorf("request error %v", err)
+		return
+	}
+	hit.Ended(mm.Original,cached)
+	mh,err:=hit.ToModel()
+	if err!=nil{
+		// if model.Hit fails we should still redirect the client
+		http.Redirect(w, r, mm.Original, e.responses[Redirect].Code)
+		log.Errorf("error in hit: %v", err)
+		return
+	}
+	err=mh.PersistDB()
+	if err!=nil{
+		// if model.Hit fails we should still redirect the client
+		http.Redirect(w, r, mm.Original, e.responses[Redirect].Code)
+		log.Errorf("error persisting hit: %v", err)
+		return
 	}
 	http.Redirect(w, r, mm.Original, e.responses[Redirect].Code)
 }

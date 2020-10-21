@@ -45,23 +45,27 @@ func (e Endpoints) GetHitsOverTimePeriod(w http.ResponseWriter, r *http.Request)
 	if err != nil {
 		e.Response(w, InternalError)
 		log.Errorf("request error %v", err)
+		return
 	}
 	err = h.validate()
 	if err != nil {
 		e.Response(w, NotAllowed)
 		log.Errorf("request error %v", err)
+		return
+
 	}
 	start, end := h.getTimePeriod()
 	hits, err := model.HitsFromDb(h.shortID, start, end)
 	if err != nil {
 		e.Response(w, InternalError)
 		log.Errorf("request error %v", err)
+		return
 	}
 	json, err := e.EncodeJSON(hits, false)
 	if err != nil {
 		e.Response(w, InternalError)
 		log.Errorf("request error %v", err)
+		return
 	}
 	e.Response(w, Success, json...)
-	return
 }

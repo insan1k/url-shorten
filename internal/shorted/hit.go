@@ -15,6 +15,7 @@ type Hit struct {
 	WasCached bool
 	Took      time.Duration
 	Timestamp time.Time
+	// todo: add if we got any errors processing this hit
 }
 
 //Ended is called once we finished processing the redirect from a hit

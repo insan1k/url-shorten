@@ -59,8 +59,19 @@ func (s ShortURL) PersistDB() (err error) {
 	return
 }
 
-//ShortURLFromCache retrieves a ShortURL from the cache
-func ShortURLFromCache(id string) (s ShortURL, err error) {
+// FindShortURL retrieves looks for and retrieves a ShortURL from cache or database
+func FindShortURL(id string) (s ShortURL, cached bool, err error) {
+	s, err = shortURLFromCache(id)
+	if err == nil {
+		cached = true
+		return
+	}
+	s, err = shortURLFromDB(id)
+	return
+}
+
+//shortURLFromCache retrieves a ShortURL from the cache
+func shortURLFromCache(id string) (s ShortURL, err error) {
 	packed, err := cache.C.Get(id)
 	if err != nil {
 		return
@@ -69,8 +80,8 @@ func ShortURLFromCache(id string) (s ShortURL, err error) {
 	return
 }
 
-//ShortURLFromDB retrieves a ShortURL from the database
-func ShortURLFromDB(id string) (s ShortURL, err error) {
+//shortURLFromDB retrieves a ShortURL from the database
+func shortURLFromDB(id string) (s ShortURL, err error) {
 	session, err := database.Driver.Session(neo4j.AccessModeWrite)
 	if err != nil {
 		return

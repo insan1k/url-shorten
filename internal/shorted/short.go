@@ -25,8 +25,8 @@ func NewURL(u string) (s ShortURL, err error) {
 	return
 }
 
-// NewShortURLFromAPI creates ShortURL from an API request
-func NewShortURLFromAPI(ss string) (s ShortURL, err error) {
+// NewPartialShortURLFromAPI creates ShortURL from an API request
+func NewPartialShortURLFromAPI(ss string) (s ShortURL, err error) {
 	short, err := parseShort(ss)
 	if err != nil {
 		return
