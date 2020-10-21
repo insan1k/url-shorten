@@ -13,21 +13,21 @@ func main() {
 	logger.Load()
 	err := database.Load()
 	if err != nil {
-		logger.L.Errorf("fatal %v", err)
+		logger.L.Errorf("could not connect to the database %v", err)
 		return
 	}
 	defer func() {
 		err = database.Stop()
 		logger.L.Errorf("error stopping db %v", err)
 	}()
-	err = cache.LoadCache()
+	err = cache.Load()
 	if err != nil {
-		logger.L.Errorf("fatal %v", err)
+		logger.L.Errorf("could not load cache %v", err)
 		return
 	}
 	err = api.Load()
 	if err != nil {
-		logger.L.Errorf("fatal %v", err)
+		logger.L.Errorf("could not start API %v", err)
 		return
 	}
 }

@@ -13,8 +13,8 @@ type Cache struct {
 	cache *bigcache.BigCache
 }
 
-// LoadCache is our
-func LoadCache() (err error) {
+// Load is our
+func Load() (err error) {
 	var cacheConfig = bigcache.Config{
 		Shards:             configuration.C.CacheShards,
 		LifeWindow:         configuration.C.CacheLifeWindow,
