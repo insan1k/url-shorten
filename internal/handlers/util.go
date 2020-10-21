@@ -26,6 +26,12 @@ type Endpoints struct {
 	c         configuration.Configuration
 }
 
+func New()(e Endpoints){
+	e.load()
+	return
+}
+
+
 type response struct {
 	Code   int
 	String string

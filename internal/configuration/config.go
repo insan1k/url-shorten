@@ -10,6 +10,7 @@ import (
 var C Configuration
 
 type Configuration struct {
+	// shorten service configuration
 	Scheme string
 	Port   string
 	Domain string

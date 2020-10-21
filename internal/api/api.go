@@ -3,6 +3,7 @@ package api
 import (
 	"github.com/gorilla/mux"
 	"github.com/insan1k/one-qr-dot-me/internal/configuration"
+	"github.com/insan1k/one-qr-dot-me/internal/handlers"
 )
 
 // API holds mux router
@@ -21,5 +22,8 @@ func (a *API) LoadAPI(c configuration.Configuration) (err error) {
 }
 
 func (a *API) registerRoutes() {
-	//todo: register routes here
+	e:=handlers.New()
+	a.Router.HandleFunc("/short", e.PostShortURL)
+	a.Router.HandleFunc("/hits", e.GetHitsOverTimePeriod)
+	a.Router.PathPrefix("/").HandlerFunc(e.GetRedirectShortURL)
 }
