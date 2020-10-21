@@ -23,4 +23,4 @@
 .neo4j/*
 
 # Local Config
-./cmd/url-shorten/config.yml
+cmd/url-shorten/config.yml
