@@ -2,6 +2,7 @@ package model
 
 import (
 	"github.com/insan1k/one-qr-dot-me/internal/database"
+	"github.com/insan1k/one-qr-dot-me/internal/logger"
 	"github.com/neo4j/neo4j-go-driver/neo4j"
 	"time"
 )
@@ -19,31 +20,31 @@ func HitsFromDb(shortID string, start, end time.Time) (h Hits, err error) {
 		return
 	}
 	defer func() {
-		err = session.Close()
+		if deferErr := session.Close(); deferErr != nil {
+			logger.L.Errorf("session close error %v", deferErr)
+		}
 	}()
 	data := map[string]interface{}{
 		"short_id": shortID,
 		"start":    start.Format(time.RFC3339Nano),
 		"end":      end.Format(time.RFC3339Nano),
 	}
-	result, err := session.Run("MATCH (n:Hit {short_id: $short_id})"+
-		"where datetime(n:timestamp)>$start"+
-		"or "+
-		"datetime(n:timestamp)<$end"+
-		"`;", data)
+	result, err := session.Run("MATCH (n:ShortURL)--(m:Hit) "+
+		"WHERE n.short_id = $short_id "+
+		"AND ( datetime(m.timestamp) > datetime($start) "+
+		"OR "+
+		"datetime(m.timestamp) < datetime($end) ) "+
+		"RETURN m", data)
 	if err != nil {
 		return
 	}
 	for result.Next() {
 		var hit Hit
-		hit, err = NewHitFromDB(result.Record())
+		hit, err = NewHitFromDB(result.Record().GetByIndex(0).(neo4j.Node))
 		if err != nil {
 			return
 		}
 		h.Hits = append(h.Hits, hit)
-	}
-	if _, err = result.Consume(); err != nil {
-		return
 	}
 	h.Count = len(h.Hits)
 	return

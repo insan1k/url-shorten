@@ -60,18 +60,18 @@ type config struct {
 
 func envToCamelCase(val string) string {
 	ss := strings.Split(val, "_")
-	ss[0]=strings.ToLower(ss[0])
-	if len(ss)==1{
+	ss[0] = strings.ToLower(ss[0])
+	if len(ss) == 1 {
 		return ss[0]
 	}
 	var camelcase string
 	for i, s := range ss {
-		if i>0{
-			firstLetter:=s[0:1]
-			firstLetter=strings.ToUpper(firstLetter)
-			s=firstLetter+strings.ToLower(s[1:])
+		if i > 0 {
+			firstLetter := s[0:1]
+			firstLetter = strings.ToUpper(firstLetter)
+			s = firstLetter + strings.ToLower(s[1:])
 		}
-		camelcase+=s
+		camelcase += s
 	}
 	return camelcase
 }

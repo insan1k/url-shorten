@@ -7,7 +7,7 @@ import (
 
 //Hit is the struct that represents the event of a redirect
 type Hit struct {
-	ID        ID
+	HitID     ID
 	ShortID   ID
 	From      urlShorten
 	To        urlShorten
@@ -28,12 +28,12 @@ func (h *Hit) Ended(original string, cached bool) {
 
 //HitFromAPI creates Hit from the API endpoint
 func HitFromAPI(url ShortURL, remoteAddr string) (h Hit, err error) {
-	h.ID, err = NewID()
+	h.HitID, err = NewID()
 	if err != nil {
 		return
 	}
 	h.From = url.Short
-	h.ShortID = url.ID
+	h.ShortID = url.ShortID
 	err = h.Address.parse(remoteAddr)
 	if err != nil {
 		return
@@ -44,7 +44,7 @@ func HitFromAPI(url ShortURL, remoteAddr string) (h Hit, err error) {
 
 // HitFromModel creates Hit based on model.Hit
 func HitFromModel(m model.Hit) (h Hit, err error) {
-	err = h.ID.decodeID(m.ID)
+	err = h.HitID.decodeID(m.HitID)
 	if err != nil {
 		return
 	}
@@ -71,8 +71,8 @@ func HitFromModel(m model.Hit) (h Hit, err error) {
 
 // ToModel converts Hit to model.Hit
 func (h Hit) ToModel() (m model.Hit, err error) {
-	m.ID = h.ID.string()
-	m.ShortID = h.ShortID.string()
+	m.HitID = h.HitID.encodeID()
+	m.ShortID = h.ShortID.encodeID()
 	m.From = h.From.string()
 	m.To = h.To.string()
 	m.Address = h.Address.string()

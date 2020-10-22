@@ -234,8 +234,8 @@ func registerString(conf config, c *Configuration) {
 }
 
 func registerStringSlice(conf config, c *Configuration) {
-	ss, err := cast.ToStringSliceE(strings.ReplaceAll(conf.Default,","," "))
-		if err != nil {
+	ss, err := cast.ToStringSliceE(strings.ReplaceAll(conf.Default, ",", " "))
+	if err != nil {
 		handleError(err)
 	}
 	c.pFlag.StringSlice(

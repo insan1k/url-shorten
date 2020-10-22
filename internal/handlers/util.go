@@ -51,10 +51,6 @@ func (r response) Body() []byte {
 }
 
 func (e *Endpoints) load() {
-	e.registerResponses()
-}
-
-func (e *Endpoints) registerResponses() {
 	e.responses = map[int]response{
 		Success:       {200, `{"code": 200, "message": "Asked and done"}`},
 		NoContent:     {204, `{"code": 204, "message": "No content!"}`},
@@ -63,7 +59,7 @@ func (e *Endpoints) registerResponses() {
 		Unauthorized:  {401, `{"code": 401, "message": "Who are you?"}`},
 		Forbidden:     {403, `{"code": 403, "message": "Can't touch this!"}`},
 		NotAllowed:    {405, `{"code": 405, "message": "This is not the way"}`},
-		NotFound:      {404, `{"code": 404, "message": "Resource not found"}`},
+		NotFound:      {404, `{"code": 404, "message": "You do not know the way"}`},
 		InternalError: {500, `{"code": 500, "message": "Get to the chopper!"}`},
 	}
 }
@@ -93,7 +89,7 @@ func (e Endpoints) EncodeJSON(toMarshall interface{}, ident bool) (j []byte, err
 }
 
 // Response writes a response to http.ResponseWriter
-func (e *Endpoints) Response(w http.ResponseWriter, resp int, body ...byte) {
+func (e Endpoints) Response(w http.ResponseWriter, resp int, body ...byte) {
 	// get response from default responses
 	r, ok := e.responses[resp]
 	if !ok {
@@ -101,10 +97,23 @@ func (e *Endpoints) Response(w http.ResponseWriter, resp int, body ...byte) {
 		r.String = `{"code": 500, "message": "Response Not Implemented!"}`
 	}
 	w.WriteHeader(r.Code)
-	if body != nil {
+	if body == nil {
 		body = r.Body()
 	}
 	_, err := w.Write(body)
-	log.Errorf("failed writing body", err)
+	if err != nil {
+		log.Errorf("failed writing body", err)
+	}
+	return
+}
+
+// Response performs a http.Redirect to the supplied url
+func (e Endpoints) Redirect(w http.ResponseWriter, redirectURL string) {
+	w.Header().Set("Location", redirectURL)
+	w.WriteHeader(e.responses[Redirect].Code)
+	_, err := w.Write(e.responses[Redirect].Body())
+	if err != nil {
+		log.Errorf("failed writing body", err)
+	}
 	return
 }

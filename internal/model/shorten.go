@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/insan1k/one-qr-dot-me/internal/cache"
 	"github.com/insan1k/one-qr-dot-me/internal/database"
+	"github.com/insan1k/one-qr-dot-me/internal/logger"
 	"github.com/neo4j/neo4j-go-driver/neo4j"
 	"github.com/shamaton/msgpack"
 	"github.com/spf13/cast"
@@ -18,7 +19,7 @@ const (
 
 // ShortURL is the model struct for ShortURL
 type ShortURL struct {
-	ID        string    `json:"id" msgpack:"id"`
+	ShortID   string    `json:"short_id" msgpack:"short_id"`
 	Original  string    `json:"original" msgpack:"original"`
 	Short     string    `json:"short" msgpack:"short"`
 	Timestamp time.Time `json:"timestamp" msgpack:"timestamp"`
@@ -30,7 +31,7 @@ func (s ShortURL) PersistCache() (err error) {
 	if err != nil {
 		return
 	}
-	err = cache.C.Set(s.ID, packed)
+	err = cache.C.Set(s.ShortID, packed)
 	return
 }
 
@@ -41,16 +42,22 @@ func (s ShortURL) PersistDB() (err error) {
 		return
 	}
 	defer func() {
-		err = session.Close()
+		if deferErr := session.Close(); deferErr != nil {
+			logger.L.Errorf("session close error %v", deferErr)
+		}
 	}()
 	data := map[string]interface{}{
-		"id":        s.ID,
+		"short_id":  s.ShortID,
 		"original":  s.Original,
 		"short":     s.Short,
 		"timestamp": s.Timestamp.Format(time.RFC3339Nano),
 	}
-	result, err := session.Run("CREATE (n:ShortURL {id: $id, original: $original, short: $short, timestamp: $time})", data)
+	result, err := session.Run("CREATE (n:ShortURL {short_id: $short_id, original: $original, short: $short, timestamp: $timestamp})", data)
 	if err != nil {
+		return
+	}
+	if result.Err() != nil {
+		err = result.Err()
 		return
 	}
 	if _, err = result.Consume(); err != nil {
@@ -61,12 +68,17 @@ func (s ShortURL) PersistDB() (err error) {
 
 // FindShortURL retrieves looks for and retrieves a ShortURL from cache or database
 func FindShortURL(id string) (s ShortURL, cached bool, err error) {
-	s, err = shortURLFromCache(id)
-	if err == nil {
+	if s, err = shortURLFromCache(id); err == nil {
 		cached = true
 		return
 	}
-	s, err = shortURLFromDB(id)
+	if s, err = shortURLFromDB(id); err != nil {
+		return
+	}
+	// we're going to suppress this error and log it here
+	if errCache := s.PersistCache(); errCache != nil {
+		logger.L.Errorf("error persisting the short url from DB in Cache %v", errCache)
+	}
 	return
 }
 
@@ -87,64 +99,70 @@ func shortURLFromDB(id string) (s ShortURL, err error) {
 		return
 	}
 	defer func() {
-		err = session.Close()
+		if deferErr := session.Close(); deferErr != nil {
+			logger.L.Errorf("session close error %v", deferErr)
+		}
 	}()
 	data := map[string]interface{}{
-		"id": id,
+		"short_id": id,
 	}
-	result, err := session.Run("MATCH (n:ShortURL) WHERE id(n) = $id", data)
+	result, err := session.Run("MATCH (n:ShortURL) WHERE n.short_id = $short_id RETURN n", data)
 	if err != nil {
 		return
 	}
+	if result.Err() != nil {
+		err = result.Err()
+		return
+	}
 	if result.Next() {
-		err = s.parseFromDB(result.Record())
+		err = s.parseFromDB(result.Record().GetByIndex(0).(neo4j.Node))
 		if err != nil {
 			return
 		}
 	} else {
-		err = result.Err()
+		err = errors.New("node not found")
 		return
 	}
 	return
 }
 
-func (s *ShortURL) parseFromDB(record neo4j.Record) (err error) {
-	jID, ok := record.Get("id")
+func (s *ShortURL) parseFromDB(node neo4j.Node) (err error) {
+	jID, ok := node.Props()["short_id"]
 	if !ok {
 		err = errors.New(notFoundError)
 		return
 	}
-	jOriginal, ok := record.Get("original")
+	jOriginal, ok := node.Props()["original"]
 	if !ok {
 		err = errors.New(notFoundError)
 		return
 	}
-	jShort, ok := record.Get("short")
+	jShort, ok := node.Props()["short"]
 	if !ok {
 		err = errors.New(notFoundError)
 		return
 	}
-	jTimestamp, ok := record.Get("timestamp")
+	jTimestamp, ok := node.Props()["timestamp"]
 	if !ok {
 		err = errors.New(notFoundError)
 		return
 	}
-	s.ID, err = cast.ToStringE(jID)
+	s.ShortID, err = cast.ToStringE(jID)
 	if err != nil {
 		err = fmt.Errorf(couldNotParseError, err)
 		return
 	}
-	s.ID, err = cast.ToStringE(jShort)
+	s.Short, err = cast.ToStringE(jShort)
 	if err != nil {
 		err = fmt.Errorf(couldNotParseError, err)
 		return
 	}
-	s.ID, err = cast.ToStringE(jOriginal)
+	s.Original, err = cast.ToStringE(jOriginal)
 	if err != nil {
 		err = fmt.Errorf(couldNotParseError, err)
 		return
 	}
-	s.ID, err = cast.ToStringE(jTimestamp)
+	s.Timestamp, err = cast.ToTimeE(jTimestamp)
 	if err != nil {
 		err = fmt.Errorf(couldNotParseError, err)
 		return

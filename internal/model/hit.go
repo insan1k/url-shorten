@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/insan1k/one-qr-dot-me/internal/database"
+	"github.com/insan1k/one-qr-dot-me/internal/logger"
 	"github.com/neo4j/neo4j-go-driver/neo4j"
 	"github.com/spf13/cast"
 	"time"
@@ -11,7 +12,7 @@ import (
 
 // Hit represents the model of a redirection event
 type Hit struct {
-	ID        string        `json:"id"`
+	HitID     string        `json:"hit_id"`
 	ShortID   string        `json:"short_id"`
 	From      string        `json:"from"`
 	To        string        `json:"to"`
@@ -21,17 +22,28 @@ type Hit struct {
 	Timestamp time.Time     `json:"timestamp"`
 }
 
-// PersistDB writes a single Hit to the database
-func (h Hit) PersistDB() (err error) {
+// Persist writes a single Hit to the database
+func (h Hit) Persist() (err error) {
+	err = h.perisistDB()
+	if err != nil {
+		return
+	}
+	err = h.persistRelationshipDB()
+	return
+}
+
+func (h Hit) perisistDB() (err error) {
 	session, err := database.Driver.Session(neo4j.AccessModeWrite)
 	if err != nil {
 		return
 	}
 	defer func() {
-		err = session.Close()
+		if deferErr := session.Close(); deferErr != deferErr {
+			logger.L.Errorf("session close error %v", deferErr)
+		}
 	}()
 	data := map[string]interface{}{
-		"id":         h.ID,
+		"hit_id":     h.HitID,
 		"short_id":   h.ShortID,
 		"from":       h.From,
 		"to":         h.From,
@@ -42,14 +54,44 @@ func (h Hit) PersistDB() (err error) {
 	}
 	result, err := session.Run(""+
 		"CREATE (n:Hit {"+
-		"id: $id, "+
+		"hit_id: $hit_id, "+
 		"short_id: $short_id, "+
 		"from: $from, "+
 		"to: $to, "+
 		"address: $address, "+
 		"was_cached: $was_cached, "+
 		"took: $took, "+
-		"timestamp: timestamp})", data)
+		"timestamp: $timestamp "+
+		"})", data)
+	if err != nil {
+		return
+	}
+	if _, err = result.Consume(); err != nil {
+		return err
+	}
+	return
+}
+
+// persistRelationshipDB persists the relationship of model.ShortURL and model.Hit
+func (h Hit) persistRelationshipDB() (err error) {
+	session, err := database.Driver.Session(neo4j.AccessModeWrite)
+	if err != nil {
+		return
+	}
+	defer func() {
+		if deferErr := session.Close(); deferErr != deferErr {
+			logger.L.Errorf("session close error %v", deferErr)
+		}
+	}()
+	data := map[string]interface{}{
+		"hit_id":   h.HitID,
+		"short_id": h.ShortID,
+	}
+	result, err := session.Run(""+
+		"MATCH (a:ShortURL),(b:Hit) "+
+		"WHERE a.short_id = $short_id AND b.short_id = $short_id AND b.hit_id = $hit_id "+
+		"CREATE (a)-[r:RELTYPE]->(b) "+
+		"RETURN type(r)", data)
 	if err != nil {
 		return
 	}
@@ -66,17 +108,19 @@ func GetHitFromDB(id string) (h Hit, err error) {
 		return
 	}
 	defer func() {
-		err = session.Close()
+		if deferErr := session.Close(); deferErr != nil {
+			logger.L.Errorf("session close error %v", deferErr)
+		}
 	}()
 	data := map[string]interface{}{
 		"id": id,
 	}
-	result, err := session.Run("MATCH (n:Hit) WHERE id(n) = $id", data)
+	result, err := session.Run("MATCH (n:Hit) WHERE n.id = $id RETURN n", data)
 	if err != nil {
 		return
 	}
 	if result.Next() {
-		err = h.parseFromDB(result.Record())
+		err = h.parseFromDB(result.Record().GetByIndex(0).(neo4j.Node))
 		if err != nil {
 			return
 		}
@@ -88,54 +132,54 @@ func GetHitFromDB(id string) (h Hit, err error) {
 }
 
 // NewHitFromDB creates a Hit from a database record
-func NewHitFromDB(record neo4j.Record) (h Hit, err error) {
-	err = h.parseFromDB(record)
+func NewHitFromDB(n neo4j.Node) (h Hit, err error) {
+	err = h.parseFromDB(n)
 	return
 }
 
-//todo: create a JSON parser from neo4j.Record the complexity here is just unacceptable
-func (h *Hit) parseFromDB(record neo4j.Record) (err error) {
-	jID, ok := record.Get("id")
+//todo: create a JSON parser from neo4j.Node the complexity here is just unacceptable
+func (h *Hit) parseFromDB(n neo4j.Node) (err error) {
+	jID, ok := n.Props()["hit_id"]
 	if !ok {
 		err = errors.New(notFoundError)
 		return
 	}
-	jShortID, ok := record.Get("short_id")
+	jShortID, ok := n.Props()["short_id"]
 	if !ok {
 		err = errors.New(notFoundError)
 		return
 	}
-	jFrom, ok := record.Get("from")
+	jFrom, ok := n.Props()["from"]
 	if !ok {
 		err = errors.New(notFoundError)
 		return
 	}
-	jTo, ok := record.Get("to")
+	jTo, ok := n.Props()["to"]
 	if !ok {
 		err = errors.New(notFoundError)
 		return
 	}
-	jAddress, ok := record.Get("id")
+	jAddress, ok := n.Props()["address"]
 	if !ok {
 		err = errors.New(notFoundError)
 		return
 	}
-	jWasCached, ok := record.Get("was_cached")
+	jWasCached, ok := n.Props()["was_cached"]
 	if !ok {
 		err = errors.New(notFoundError)
 		return
 	}
-	jTook, ok := record.Get("took")
+	jTook, ok := n.Props()["took"]
 	if !ok {
 		err = errors.New(notFoundError)
 		return
 	}
-	jTimestamp, ok := record.Get("timestamp")
+	jTimestamp, ok := n.Props()["timestamp"]
 	if !ok {
 		err = errors.New(notFoundError)
 		return
 	}
-	h.ID, err = cast.ToStringE(jID)
+	h.HitID, err = cast.ToStringE(jID)
 	if err != nil {
 		err = fmt.Errorf(couldNotParseError, err)
 		return

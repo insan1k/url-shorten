@@ -17,8 +17,9 @@ func main() {
 		return
 	}
 	defer func() {
-		err = database.Stop()
-		logger.L.Errorf("error stopping db %v", err)
+		if deferErr := database.Stop(); deferErr != nil {
+			logger.L.Errorf("session close error %v", deferErr)
+		}
 	}()
 	err = cache.Load()
 	if err != nil {

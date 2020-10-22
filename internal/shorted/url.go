@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/insan1k/one-qr-dot-me/internal/configuration"
 	"net/url"
+	"strings"
 )
 
 const (
@@ -69,7 +70,7 @@ func parseShort(s string) (u urlShorten, err error) {
 }
 
 func (u urlShorten) escapeEndpoint() (escaped string) {
-	escaped = u.Path[len(configuration.URLShortenerPath):]
+	escaped = strings.ReplaceAll(u.Path, configuration.URLShortenerPath, "")
 	return
 }
 
