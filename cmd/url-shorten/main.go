@@ -9,8 +9,8 @@ import (
 )
 
 func main() {
-	configuration.C.Load()
 	logger.Load()
+	configuration.C.Load()
 	err := database.Load()
 	if err != nil {
 		logger.L.Errorf("could not connect to the database %v", err)

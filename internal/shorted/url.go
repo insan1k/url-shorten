@@ -28,7 +28,7 @@ func newOriginal(o string) (u urlShorten, err error) {
 	if err = u.validateScheme(parsedURL.Scheme); err != nil {
 		return
 	}
-	if parsedURL.Hostname() == configuration.C.Domain {
+	if parsedURL.Hostname() == configuration.C.ShortenDomain {
 		err = errors.New(errorInvalidRedirectHostname)
 		return
 	}
@@ -37,9 +37,9 @@ func newOriginal(o string) (u urlShorten, err error) {
 }
 
 func newShort(id string) (u urlShorten, err error) {
-	url := configuration.C.Scheme + "://" + configuration.C.Domain
-	if configuration.C.Port != "" {
-		url += ":" + configuration.C.Port
+	url := configuration.C.ShortenScheme + "://" + configuration.C.ShortenDomain
+	if configuration.C.ShortenPort != "" {
+		url += ":" + configuration.C.ShortenPort
 	}
 	url += configuration.URLShortenerPath + id
 	return parseShort(url)
@@ -52,15 +52,15 @@ func parseShort(s string) (u urlShorten, err error) {
 	if err != nil {
 		return
 	}
-	if parsedURL.Scheme != configuration.C.Scheme {
+	if parsedURL.Scheme != configuration.C.ShortenScheme {
 		err = errors.New(errorInvalidScheme)
 		return
 	}
-	if parsedURL.Hostname() != configuration.C.Domain {
+	if parsedURL.Hostname() != configuration.C.ShortenDomain {
 		err = errors.New(errorInvalidHostname)
 		return
 	}
-	if parsedURL.Port() != configuration.C.Port {
+	if parsedURL.Port() != configuration.C.ShortenPort {
 		err = errors.New(errorInvalidPort)
 		return
 	}

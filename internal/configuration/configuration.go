@@ -1,15 +1,14 @@
 package configuration
 
 import (
-	"fmt"
-	"github.com/spf13/pflag"
+	"github.com/insan1k/one-qr-dot-me/internal/logger"
 	"github.com/spf13/viper"
-	"log"
+	"os"
 )
 
 //handle errors in configuration package
 func handleError(err error) {
-	log.Fatal(fmt.Errorf("fatal config caught an error:%v", err))
+	logger.L.Fatalf("config error %v", err.Error())
 }
 
 //registerFlags
@@ -24,11 +23,11 @@ func registerFlags(c *Configuration) {
 
 //registerEnvs
 //register environment variables
-func registerEnvs(config *Configuration) {
-	config.viperEnvAndFile.SetEnvPrefix(envPrefix)
+func registerEnvs(c *Configuration) {
+	c.viperEnvAndFile.SetEnvPrefix(envPrefix)
 	for _, k := range configurationMap {
 		if k.Env != "" {
-			if err := config.viperEnvAndFile.BindEnv(k.Env); err != nil {
+			if err := c.viperEnvAndFile.BindEnv(k.Env); err != nil {
 				handleError(err)
 			}
 		}
@@ -37,11 +36,11 @@ func registerEnvs(config *Configuration) {
 
 //parseFlags
 //parses registered flags that can be passed as arguments
-func parseFlags(config *Configuration) {
-	if err := config.pFlag.Parse(config.pFlag.Args()); err != nil {
+func parseFlags(c *Configuration) {
+	if err := c.pFlag.Parse(os.Args[1:]); err != nil {
 		handleError(err)
 	}
-	if err := config.viperFlag.BindPFlags(pflag.CommandLine); err != nil {
+	if err := c.viperFlag.BindPFlags(c.pFlag); err != nil {
 		handleError(err)
 	}
 }
@@ -55,6 +54,7 @@ func parseFile(c *Configuration) {
 		c.viperEnvAndFile.SetConfigFile(configFromEnv)
 		err := c.viperEnvAndFile.ReadInConfig()
 		if err == nil {
+			logger.L.Debug("config file loaded from from env")
 			return
 		}
 	}
@@ -63,17 +63,20 @@ func parseFile(c *Configuration) {
 		c.viperEnvAndFile.SetConfigFile(configFromFlag)
 		err := c.viperEnvAndFile.ReadInConfig()
 		if err == nil {
+			logger.L.Debug("config file loaded from from flag")
 			return
 		}
 	}
 	c.viperEnvAndFile.SetConfigFile(configurationMap[configFile].Default)
 	err := c.viperEnvAndFile.ReadInConfig()
 	if err == nil {
+		logger.L.Debug("config file loaded from defaults")
 		return
 	}
 	c.viperEnvAndFile.SetConfigFile("./" + fileName + "." + fileExtension)
 	err = c.viperEnvAndFile.ReadInConfig()
 	if err != nil {
+		logger.L.Info("config file was not found in pwd")
 		return
 	}
 }
@@ -84,17 +87,17 @@ func getConf(c *Configuration, name string) (got interface{}) {
 
 func getter(env *viper.Viper, flag *viper.Viper, c config) (asserted interface{}) {
 	asserted = c.Default
-	assertYaml := getConfFromYaml(env, c)
-	assertEnv := getConfFromEnv(env, c)
-	assertFlag := getConfFromFlag(flag, c)
-	if assertYaml != "" {
-		asserted = assertYaml
+	inFile := getConfFromYaml(env, c)
+	inEnv := getConfFromEnv(env, c)
+	inFlag := getConfFromFlag(flag, c)
+	if inFile != "" {
+		asserted = inFile
 	}
-	if assertEnv != "" {
-		asserted = assertEnv
+	if inEnv != "" {
+		asserted = inEnv
 	}
-	if assertFlag != "" {
-		asserted = assertFlag
+	if inFlag != "" {
+		asserted = inFlag
 	}
 	return
 }

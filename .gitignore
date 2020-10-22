@@ -24,3 +24,6 @@
 
 # Local Config
 cmd/url-shorten/config.yml
+cmd/url-shorten/config-local.yml
+cmd/url-shorten/config-test.yml
+

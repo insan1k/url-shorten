@@ -8,7 +8,7 @@ import (
 )
 
 func (a *API) newHandler() (err error) {
-	l, err := net.Listen(configuration.C.HTTPProtocol, configuration.C.HTTPHostname)
+	l, err := net.Listen(configuration.C.HTTPBindProtocol, configuration.C.HTTPHostname)
 	if err != nil {
 		return
 	}
@@ -31,10 +31,10 @@ func (a *API) newHandler() (err error) {
 		Handler:      cr.Handler(a.Router),
 	}
 
-	if configuration.C.ServerKeyPath == "" {
+	if configuration.C.HTTPTLSKeyPath == "" {
 		err = srv.Serve(l)
 	} else {
-		err = srv.ServeTLS(l, configuration.C.ServerCertPath, configuration.C.ServerKeyPath)
+		err = srv.ServeTLS(l, configuration.C.HTTPTLSCertPath, configuration.C.HTTPTLSKeyPath)
 	}
 	return
 }

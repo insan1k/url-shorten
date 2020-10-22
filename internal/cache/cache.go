@@ -21,7 +21,7 @@ func Load() (err error) {
 		CleanWindow:        configuration.C.CacheCleanWindow,
 		MaxEntriesInWindow: configuration.C.CacheMaxEntriesInWindow,
 		MaxEntrySize:       configuration.C.CacheMaxEntrySize,
-		HardMaxCacheSize:   configuration.C.CacheHardMaxCacheSize,
+		HardMaxCacheSize:   configuration.C.CacheHardMaxSize,
 	}
 	C.cache, err = bigcache.NewBigCache(cacheConfig)
 	return

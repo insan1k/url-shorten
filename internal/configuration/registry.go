@@ -1,7 +1,6 @@
 package configuration
 
 import (
-	"encoding/csv"
 	"errors"
 	"github.com/spf13/cast"
 	"strings"
@@ -235,8 +234,8 @@ func registerString(conf config, c *Configuration) {
 }
 
 func registerStringSlice(conf config, c *Configuration) {
-	ss, err := parseStringSlice(conf.Default)
-	if err != nil {
+	ss, err := cast.ToStringSliceE(strings.ReplaceAll(conf.Default,","," "))
+		if err != nil {
 		handleError(err)
 	}
 	c.pFlag.StringSlice(
@@ -248,15 +247,4 @@ func registerStringSlice(conf config, c *Configuration) {
 
 func notImplemented(config, *Configuration) {
 	handleError(errors.New("not implemented"))
-}
-
-func parseStringSlice(val string) ([]string, error) {
-	val = val[1 : len(val)-1]
-	// An empty string would cause a slice with one (empty) string
-	if len(val) == 0 {
-		return []string{}, nil
-	}
-	stringReader := strings.NewReader(val)
-	csvReader := csv.NewReader(stringReader)
-	return csvReader.Read()
 }

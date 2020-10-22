@@ -4,6 +4,8 @@ import (
 	"github.com/spf13/cast"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
+	"os"
+	"strings"
 	"time"
 )
 
@@ -18,14 +20,14 @@ var C Configuration
 // Configuration holds all the configuration parameters for our program
 type Configuration struct {
 	// shorten service configuration
-	Scheme string
-	Port   string
-	Domain string
+	ShortenScheme string
+	ShortenPort   string
+	ShortenDomain string
 	// HTTP arguments
-	ServerCertPath   string
-	ServerKeyPath    string
+	HTTPTLSCertPath  string
+	HTTPTLSKeyPath   string
 	HTTPHostname     string
-	HTTPProtocol     string
+	HTTPBindProtocol string
 	HTTPReadTimeout  time.Duration
 	HTTPWriteTimeout time.Duration
 	HTTPIdleTimeout  time.Duration
@@ -35,7 +37,7 @@ type Configuration struct {
 	CacheCleanWindow        time.Duration
 	CacheMaxEntriesInWindow int
 	CacheMaxEntrySize       int
-	CacheHardMaxCacheSize   int
+	CacheHardMaxSize        int
 	// Neo4J arguments
 	Neo4JSecure     bool
 	Neo4JTarget     string
@@ -56,19 +58,41 @@ type config struct {
 	castType int
 }
 
+func envToCamelCase(val string) string {
+	ss := strings.Split(val, "_")
+	ss[0]=strings.ToLower(ss[0])
+	if len(ss)==1{
+		return ss[0]
+	}
+	var camelcase string
+	for i, s := range ss {
+		if i>0{
+			firstLetter:=s[0:1]
+			firstLetter=strings.ToUpper(firstLetter)
+			s=firstLetter+strings.ToLower(s[1:])
+		}
+		camelcase+=s
+	}
+	return camelcase
+}
+
+func envToFlag(val string) string {
+	return strings.ToLower(val)
+}
+
 const (
 	// config file stuff
 	fileType      = "yaml"
 	fileExtension = "yml"
-	fileName      = "conf"
+	fileName      = "config"
 	// don't forget to add new configurations here
-	envPrefix                  = "SHORT_URL"
+	envPrefix                  = "S"
 	configFile                 = "CONFIG_FILE"
 	envShortenScheme           = "SHORTEN_SCHEME"
 	envShortenPort             = "SHORTEN_PORT"
 	envShortenDomain           = "SHORTEN_DOMAIN"
-	envServerTLSCertPath       = "TLS_CERT_PATH"
-	envServerTLSKeyPath        = "TLS_KEY_PATH"
+	envHTTPTLSCertPath         = "HTTP_TLS_CERT_PATH"
+	envHTTPTLSKeyPath          = "HTTP_TLS_KEY_PATH"
 	envHTTPHostname            = "HTTP_HOSTNAME"
 	envHTTPProtocol            = "HTTP_BIND_PROTOCOL"
 	envHTTPReadTimeout         = "HTTP_READ_TIMEOUT"
@@ -79,7 +103,7 @@ const (
 	envCacheCleanWindow        = "CACHE_CLEAN_WINDOW"
 	envCacheMaxEntriesInWindow = "CACHE_ENTRIES_IN_WINDOW"
 	envCacheMaxEntrySize       = "CACHE_MAX_ENTRY_SIZE"
-	envCacheHardMaxCacheSize   = "CACHE_HARD_MAX_CACHE_SIZE"
+	envCacheHardMaxSize        = "CACHE_HARD_MAX_SIZE"
 	envNeo4JSecure             = "NEO4J_SECURE"
 	envNeo4JTarget             = "NEO4J_TARGET"
 	envNeo4JUser               = "NEO4J_USER"
@@ -90,177 +114,177 @@ const (
 var configurationMap = map[string]config{
 	// don't forget to add new configurations here
 	configFile: {
-		Flag:     "configFile",
+		Flag:     envToFlag(configFile),
 		Env:      configFile,
 		File:     "",
-		Default:  "one-qr-dot-me/" + fileName + "." + fileExtension,
+		Default:  "./cmd/url-shorten/" + fileName + "." + fileExtension,
 		Usage:    "set the configuration file location e.g.:\" ./config.yml\"",
 		castType: castString,
 	},
 	envShortenScheme: {
-		Flag:     "shortenScheme",
-		Env:      "",
-		File:     "ShortenScheme",
+		Flag:     "",
+		Env:      envShortenScheme,
+		File:     envToCamelCase(envShortenScheme),
 		Default:  "http",
 		Usage:    "set either http or http as the shorten url service external protocol e.g.:\"https\" defaults to http",
 		castType: castString,
 	},
 	envShortenPort: {
-		Flag:     "shortenPort",
-		Env:      "",
-		File:     "ShortenPort",
+		Flag:     "",
+		Env:      envShortenPort,
+		File:     envToCamelCase(envShortenPort),
 		Default:  "",
 		Usage:    "set the url service external port e.g.:\":8081\" defaults to empty",
 		castType: castString,
 	},
 	envShortenDomain: {
-		Flag:     "shortenDomain",
-		Env:      "",
-		File:     "ShortenDomain",
+		Flag:     "",
+		Env:      envShortenDomain,
+		File:     envToCamelCase(envShortenDomain),
 		Default:  "localhost",
 		Usage:    "set the url service external domain e.g.:\"example.com\" defaults to localhost",
 		castType: castString,
 	},
-	envServerTLSCertPath: {
-		Flag:     "tlsCertPath",
-		Env:      envServerTLSCertPath,
-		File:     "ServerTLSCertPath",
+	envHTTPTLSCertPath: {
+		Flag:     envToFlag(envHTTPTLSCertPath),
+		Env:      envHTTPTLSCertPath,
+		File:     envToCamelCase(envHTTPTLSCertPath),
 		Default:  "",
 		Usage:    "set the http server tls cert path e.g.:\"\" defaults to empty",
 		castType: castString,
 	},
-	envServerTLSKeyPath: {
-		Flag:     "tlsKeyPath",
-		Env:      envServerTLSKeyPath,
-		File:     "ServerTLSKeyPath",
+	envHTTPTLSKeyPath: {
+		Flag:     envToFlag(envHTTPTLSKeyPath),
+		Env:      envHTTPTLSKeyPath,
+		File:     envToCamelCase(envHTTPTLSKeyPath),
 		Default:  "",
 		Usage:    "set the http server tls key path  e.g.:\"\" defaults to empty",
 		castType: castString,
 	},
 	envHTTPHostname: {
-		Flag:     "httpHostname",
+		Flag:     envToFlag(envHTTPHostname),
 		Env:      envHTTPHostname,
-		File:     "HTTPHostname",
-		Default:  "localhost",
-		Usage:    "set the http server bind hostname e.g.:\"localhost:8081\" defaults to localhost",
+		File:     envToCamelCase(envHTTPHostname),
+		Default:  "localhost:8080",
+		Usage:    "set the http server bind hostname e.g.:\"localhost:8081\" defaults to localhost:8080",
 		castType: castString,
 	},
 	envHTTPProtocol: {
-		Flag:     "httpProtocol",
+		Flag:     envToFlag(envHTTPProtocol),
 		Env:      envHTTPProtocol,
-		File:     "HTTPProtocol",
+		File:     envToCamelCase(envHTTPProtocol),
 		Default:  "tcp",
 		Usage:    "set the http server bind protocol e.g.:\"tcp4\" defaults to tcp, supported protocols are tcp4, tcp6 and tcp",
 		castType: castString,
 	},
 	envHTTPReadTimeout: {
-		Flag:     "httpReadTimeout",
-		Env:      "",
-		File:     "HTTPReadTimeout",
+		Flag:     "",
+		Env:      envHTTPReadTimeout,
+		File:     envToCamelCase(envHTTPReadTimeout),
 		Default:  "1s",
 		Usage:    "set the http server read timeout e.g.:\"5s\" defaults to 1 second",
 		castType: castDuration,
 	},
 	envHTTPWriteTimeout: {
-		Flag:     "httpWriteTimeout",
-		Env:      "",
-		File:     "HTTPWriteTimeout",
+		Flag:     "",
+		Env:      envHTTPWriteTimeout,
+		File:     envToCamelCase(envHTTPWriteTimeout),
 		Default:  "1s",
 		Usage:    "set the http server write timeout e.g.:\"5s\" defaults to 1 second",
 		castType: castDuration,
 	},
 	envHTTPIdleTimeout: {
-		Flag:     "httpIdleTimeout",
-		Env:      "",
-		File:     "HTTPIdleTimeout",
+		Flag:     "",
+		Env:      envHTTPIdleTimeout,
+		File:     envToCamelCase(envHTTPIdleTimeout),
 		Default:  "1s",
 		Usage:    "set the http server idle timeout e.g.:\"5s\" defaults to 1 second",
 		castType: castDuration,
 	},
 	envCacheShards: {
-		Flag:     "cShards",
-		Env:      "",
-		File:     "CacheShards",
+		Flag:     "",
+		Env:      envCacheShards,
+		File:     envToCamelCase(envCacheShards),
 		Default:  "2048",
 		Usage:    "number of cache shards, value must be a power of two e.g.:\"4096\" defaults to 2048",
 		castType: castInt,
 	},
 	envCacheLifeWindow: {
-		Flag:     "cLifeWindow",
-		Env:      "",
-		File:     "CacheLifeWindow",
+		Flag:     "",
+		Env:      envCacheLifeWindow,
+		File:     envToCamelCase(envCacheLifeWindow),
 		Default:  "30s",
 		Usage:    "time after which a cache entry can be evicted e.g.:\"30s\" defaults to 30s",
 		castType: castDuration,
 	},
 	envCacheCleanWindow: {
-		Flag:     "cCleanWindow",
-		Env:      "",
-		File:     "CacheCleanWindow",
+		Flag:     "",
+		Env:      envCacheCleanWindow,
+		File:     envToCamelCase(envCacheCleanWindow),
 		Default:  "60s",
 		Usage:    "interval between removing expired cache entries e.g.:\"120s\" defaults to 60s",
 		castType: castDuration,
 	},
 	envCacheMaxEntriesInWindow: {
-		Flag:     "cMaxEntriesInWindow",
-		Env:      "",
-		File:     "CacheMaxEntriesInWindow",
+		Flag:     "",
+		Env:      envCacheMaxEntriesInWindow,
+		File:     envToCamelCase(envCacheMaxEntriesInWindow),
 		Default:  "0",
 		Usage:    "max number of cache entries in life window. this is used only to calculate initial size for cache shards. e.g.:\"128\" defaults to 0",
 		castType: castInt,
 	},
 	envCacheMaxEntrySize: {
-		Flag:     "cMaxEntrySize",
-		Env:      "",
-		File:     "CacheMaxEntrySize",
+		Flag:     "",
+		Env:      envCacheMaxEntrySize,
+		File:     envToCamelCase(envCacheMaxEntrySize),
 		Default:  "32",
 		Usage:    "max size size of entry in bytes. this is used only to calculate initial size for cache shards. e.g.:\"128\" defaults to 32",
 		castType: castInt,
 	},
-	envCacheHardMaxCacheSize: {
-		Flag:     "cHardMaxCacheSize",
-		Env:      "",
-		File:     "CacheHardMaxCacheSize",
+	envCacheHardMaxSize: {
+		Flag:     "",
+		Env:      envCacheHardMaxSize,
+		File:     envToCamelCase(envCacheHardMaxSize),
 		Default:  "128",
 		Usage:    "hard max cache size in megabytes. e.g.:\"512\" defaults to 128",
 		castType: castInt,
 	},
 	envNeo4JSecure: {
-		Flag:     "neo4jSecure",
+		Flag:     envToFlag(envNeo4JSecure),
 		Env:      envNeo4JSecure,
-		File:     "Neo4JSecure",
+		File:     envToCamelCase(envNeo4JSecure),
 		Default:  "false",
 		Usage:    "sets whether to turn on/off TLS encryption for neo4j. e.g.:\"true\" defaults to false",
 		castType: castBool,
 	},
 	envNeo4JTarget: {
-		Flag:     "neo4jTarget",
+		Flag:     envToFlag(envNeo4JTarget),
 		Env:      envNeo4JTarget,
-		File:     "Neo4JTarget",
+		File:     envToCamelCase(envNeo4JTarget),
 		Default:  "bolt://localhost:7687",
 		Usage:    "sets the neo4j url. e.g.:\"bolt://db.server:7687\" defaults to bolt://localhost:7687",
 		castType: castString,
 	},
 	envNeo4JUser: {
-		Flag:     "neo4jUser",
+		Flag:     envToFlag(envNeo4JUser),
 		Env:      envNeo4JUser,
-		File:     "Neo4JUser",
+		File:     envToCamelCase(envNeo4JUser),
 		Default:  "",
 		Usage:    "sets the neo4j user. e.g.:\"my-application-user\" defaults to neo4j-admin",
 		castType: castString,
 	},
 	envNeo4JPassword: {
-		Flag:     "neo4jPassword",
+		Flag:     envToFlag(envNeo4JPassword),
 		Env:      envNeo4JPassword,
-		File:     "Neo4JPassword",
+		File:     envToCamelCase(envNeo4JPassword),
 		Default:  "",
 		Usage:    "sets the neo4j password. e.g.:\"my-application-secure-password\" defaults to secret",
 		castType: castString,
 	},
 	envNeo4JRealm: {
-		Flag:     "Neo4JRealm",
+		Flag:     envToFlag(envNeo4JRealm),
 		Env:      envNeo4JRealm,
-		File:     "neo4jRealm",
+		File:     envToCamelCase(envNeo4JRealm),
 		Default:  "",
 		Usage:    "sets the neo4j realm. e.g.:\"my-neo4j-realm\" defaults to Neo4J",
 		castType: castString,
@@ -271,13 +295,13 @@ func loadConf(c *Configuration) (got Configuration) {
 	// don't forget to add new configurations here
 	return Configuration{
 		CacheShards:             cast.ToInt(getConf(c, envCacheShards)),
-		Scheme:                  cast.ToString(getConf(c, envShortenScheme)),
-		Port:                    cast.ToString(getConf(c, envShortenPort)),
-		Domain:                  cast.ToString(getConf(c, envShortenDomain)),
-		ServerCertPath:          cast.ToString(getConf(c, envServerTLSCertPath)),
-		ServerKeyPath:           cast.ToString(getConf(c, envServerTLSKeyPath)),
+		ShortenScheme:           cast.ToString(getConf(c, envShortenScheme)),
+		ShortenPort:             cast.ToString(getConf(c, envShortenPort)),
+		ShortenDomain:           cast.ToString(getConf(c, envShortenDomain)),
+		HTTPTLSCertPath:         cast.ToString(getConf(c, envHTTPTLSCertPath)),
+		HTTPTLSKeyPath:          cast.ToString(getConf(c, envHTTPTLSKeyPath)),
 		HTTPHostname:            cast.ToString(getConf(c, envHTTPHostname)),
-		HTTPProtocol:            cast.ToString(getConf(c, envHTTPProtocol)),
+		HTTPBindProtocol:        cast.ToString(getConf(c, envHTTPProtocol)),
 		HTTPReadTimeout:         cast.ToDuration(getConf(c, envHTTPReadTimeout)),
 		HTTPWriteTimeout:        cast.ToDuration(getConf(c, envHTTPWriteTimeout)),
 		HTTPIdleTimeout:         cast.ToDuration(getConf(c, envHTTPIdleTimeout)),
@@ -285,7 +309,7 @@ func loadConf(c *Configuration) (got Configuration) {
 		CacheCleanWindow:        cast.ToDuration(getConf(c, envCacheCleanWindow)),
 		CacheMaxEntriesInWindow: cast.ToInt(getConf(c, envCacheMaxEntriesInWindow)),
 		CacheMaxEntrySize:       cast.ToInt(getConf(c, envCacheMaxEntrySize)),
-		CacheHardMaxCacheSize:   cast.ToInt(getConf(c, envCacheHardMaxCacheSize)),
+		CacheHardMaxSize:        cast.ToInt(getConf(c, envCacheHardMaxSize)),
 		Neo4JSecure:             cast.ToBool(getConf(c, envNeo4JSecure)),
 		Neo4JTarget:             cast.ToString(getConf(c, envNeo4JTarget)),
 		Neo4JUser:               cast.ToString(getConf(c, envNeo4JUser)),
@@ -299,7 +323,7 @@ func loadConf(c *Configuration) (got Configuration) {
 // - environment variables
 // - file
 func (c *Configuration) Load() {
-	c.pFlag = pflag.NewFlagSet("url-shorten", pflag.PanicOnError)
+	c.pFlag = pflag.NewFlagSet(os.Args[0], pflag.PanicOnError)
 	c.viperEnvAndFile = viper.New()
 	c.viperFlag = viper.New()
 	registerFlags(c)

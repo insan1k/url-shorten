@@ -1,5 +1,5 @@
 test:
-	make test_dirs
+	make test_required
 	docker run \
         --name neo4j-test \
         -p7474:7474 -p7687:7687 \
@@ -18,7 +18,7 @@ test:
 
 
 run_local:
-	make required_dirs
+	make required
 	docker run \
         --name neo4j \
         -p7474:7474 -p7687:7687 \
@@ -32,7 +32,7 @@ run_local:
 	go run ./cmd/url-shorten/main.go --configFile=./cmd/url-shorten/config.yml
 
 required:
-	cp "./cmd/url-shorten/example-config.yml" "./cmd/url-shorten/test-config.yml" 2>/dev/null
+	cp "./cmd/url-shorten/example-config.yml" "./cmd/url-shorten/config.yml" 2>/dev/null
 	mkdir -p ".neo4j"
 	mkdir -p ".neo4j/data"
 	mkdir -p ".neo4j/logs"
