@@ -1,2 +1,2 @@
-# one-qr-dot-me
+# url-shorten
 Simple URL shortener service
