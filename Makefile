@@ -4,10 +4,10 @@ test:
         --name neo4j-test \
         -p7474:7474 -p7687:7687 \
         -d \
-        -v neo4j-test-data:$(PWD)/.neo4j-test/data:/data \
-        -v neo4j-test-logs:$(PWD)/.neo4j-test/logs:/logs \
-        -v neo4j-test-import:$(PWD)/.neo4j-test/import:/import \
-        -v neo4j-test-plugins:$(PWD)/.neo4j-test/plugins:/plugins \
+        -v $(PWD)/.neo4j-test/data:/data \
+        -v $(PWD)/.neo4j-test/logs:/logs \
+        -v $(PWD)/.neo4j-test/import:/import \
+        -v $(PWD)/.neo4j-test/plugins:/plugins \
         --env NEO4J_AUTH=$(S_NEO4J_USER)/$(S_NEO4J_PASSWORD) \
         neo4j:latest
 	# add the integration tests and unit tests here
@@ -24,13 +24,18 @@ run_local:
         --name neo4j \
         -p7474:7474 -p7687:7687 \
         -d \
-        -v neo4j-data:$(PWD)/.neo4j/data:/data \
-        -v neo4j-logs:$(PWD)/.neo4j/logs:/logs \
-        -v neo4j-import:$(PWD)/.neo4j/import:/import \
-        -v neo4j-plugins:$(PWD)/.neo4j/plugins:/plugins \
+        -v $(PWD)/.neo4j/data:/data \
+        -v $(PWD)/.neo4j/logs:/logs \
+        -v $(PWD)/.neo4j/import:/import \
+        -v $(PWD)/.neo4j/plugins:/plugins \
         --env NEO4J_AUTH=$(S_NEO4J_USER)/$(S_NEO4J_PASSWORD) \
-        neo4j:latest
+        neo4j:latest 2>/dev/null; true
 	go run ./cmd/url-shorten/main.go --configFile=./cmd/url-shorten/config.yml
+	#todo: makefile should run detached and have a make command to stop it later
+
+stop_local:
+	#todo: stop the execution of main here
+	docker stop neo4j
 
 required:
 	make .set_envs

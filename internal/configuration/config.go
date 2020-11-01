@@ -77,7 +77,7 @@ func envToCamelCase(val string) string {
 }
 
 func envToFlag(val string) string {
-	return strings.ToLower(val)
+	return envToCamelCase(val)
 }
 
 const (
