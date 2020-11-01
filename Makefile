@@ -32,7 +32,7 @@ run_local:
 	go run ./cmd/url-shorten/main.go --configFile=./cmd/url-shorten/config.yml
 
 required:
-	cp "./cmd/url-shorten/example-config.yml" "./cmd/url-shorten/config.yml" 2>/dev/null
+	cp "./cmd/url-shorten/config-example.yml" "./cmd/url-shorten/config.yml" 2>/dev/null
 	mkdir -p ".neo4j"
 	mkdir -p ".neo4j/data"
 	mkdir -p ".neo4j/logs"
@@ -45,7 +45,7 @@ cleanup:
 	rm -rfv ".build"
 
 test_required:
-	cp "./cmd/url-shorten/example-config.yml" "./cmd/url-shorten/test-config.yml" 2>/dev/null
+	cp "./cmd/url-shorten/config-example.yml" "./cmd/url-shorten/test-config.yml" 2>/dev/null
 	mkdir -p ".neo4j-test"
 	mkdir -p ".neo4j-test/data"
 	mkdir -p ".neo4j-test/logs"
