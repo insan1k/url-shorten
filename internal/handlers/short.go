@@ -59,7 +59,7 @@ func (e Endpoints) RedirectShortURL(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var hit shorted.Hit
-	hit, err = shorted.HitFromAPI(s, r.RemoteAddr)
+	hit, err = shorted.HitFromAPI(r.RemoteAddr)
 	if err != nil {
 		// this is not a problem for the user
 		logger.L.Errorf("failed to create a hit for short url %v", err)
@@ -74,7 +74,7 @@ func (e Endpoints) RedirectShortURL(w http.ResponseWriter, r *http.Request) {
 		e.Response(w, NotFound)
 		return
 	}
-	hit.Ended(mm.Original, cached)
+	hit.Ended(mm,cached)
 	var mh model.Hit
 	mh, err = hit.ToModel()
 	if err != nil {

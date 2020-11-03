@@ -18,7 +18,7 @@ test:
 # todo: write run:
 # todo: write run_debug: that runs within docker with debug support
 
-run_local:
+neo4j:
 	make required
 	docker run \
         --name neo4j \
@@ -28,8 +28,11 @@ run_local:
         -v $(PWD)/.neo4j/logs:/logs \
         -v $(PWD)/.neo4j/import:/import \
         -v $(PWD)/.neo4j/plugins:/plugins \
-        --env NEO4J_AUTH=$(S_NEO4J_USER)/$(S_NEO4J_PASSWORD) \
+        --env NEO4J_AUTH=neo4j/my-secure-password\
         neo4j:latest 2>/dev/null; true
+        #todo: get this shit from environment variables
+
+run_local:
 	go run ./cmd/url-shorten/main.go --configFile=./cmd/url-shorten/config.yml
 	#todo: makefile should run detached and have a make command to stop it later
 

@@ -19,21 +19,22 @@ type Hit struct {
 }
 
 //Ended is called once we finished processing the redirect from a hit
-func (h *Hit) Ended(original string, cached bool) {
-	h.To, _ = newOriginal(original)
+func (h *Hit) Ended(mm model.ShortURL, cached bool) {
+	url, _ := NewShortURLFromModel(mm)
+	h.From = url.Short
+	h.To = url.Original
+	h.ShortID = url.ShortID
 	h.WasCached = cached
 	h.Took = time.Now().Sub(h.Timestamp)
 	return
 }
 
 //HitFromAPI creates Hit from the API endpoint
-func HitFromAPI(url ShortURL, remoteAddr string) (h Hit, err error) {
+func HitFromAPI(remoteAddr string) (h Hit, err error) {
 	h.HitID, err = NewID()
 	if err != nil {
 		return
 	}
-	h.From = url.Short
-	h.ShortID = url.ShortID
 	err = h.Address.parse(remoteAddr)
 	if err != nil {
 		return
